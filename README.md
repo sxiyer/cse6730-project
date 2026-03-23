@@ -8,6 +8,8 @@
 - Smaran Iyer `siyer358@gatech.edu`
 - Adrian Lozada `alozada7@gatech.edu`
 
+---
+
 ### Project Description:
 
 In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulation. The simulation will involve multiple agents playing against each other. There will be two types of agents: **players** and **scalpers**. Players will play against each other. Scalpers will act as intermeiaries who profit from discrepciens in card values or high-demand card shortages. The _objective_ of **players** is `to win as much games as possible`. **Scalpers** main _goal_ is to predict the future value of cards and buy and sell them `to make a profit`. In this simulation, cards can be traded for points (the currency of the game). Players and Scalpers can use their points to buy and sell cards. The game will be played in rounds, and at the end of each round, the player that won will recieve one point. 
@@ -24,6 +26,8 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 
 5. After each game, players can use their points to buy new cards from a card market. The card market will have a limited number of cards available, and the price of each card will fluctuate based on supply and demand.
 
+--- 
+
 ### Setup Instructions:
 
 1. Need to have `Python 3.12`.
@@ -35,6 +39,8 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 ```bash
 pip install . 
 ```
+
+--- 
 
 ### Running the Simulation:
 
