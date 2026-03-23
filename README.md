@@ -45,3 +45,24 @@ pip install .
 ### Running the Simulation:
 
 1. 
+
+---
+
+### Project Structure:
+
+```txt
+rps-scalpers/
+|-- pyproject.toml          
+|-- uv.lock                 
+|-- README.md
+|-- scripts/run.sh          
+|-- src/rps_sim/
+|-- |-- main.py             
+|-- |-- simulator.py        
+|-- |-- agents.py          
+|-- |-- market.py          
+|-- |-- visualization.py   
+|-- |-- reporting.py       
+|-- results/              
+|-- tests/test_simulator.py 
+```
