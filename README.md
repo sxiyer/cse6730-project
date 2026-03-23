@@ -60,6 +60,8 @@ pip install .
 
 3. The user can press `space` to advance to the next round, or `q` to quit the simulation.
 
+4. The results will showed in the terminal, and a report will be generated in the `results/` directory.
+
 ---
 
 ### Project Structure:
