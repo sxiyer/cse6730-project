@@ -115,6 +115,7 @@ RevModPhys.73.1067)]
 * A recent article on self-organization in this context --
 [https://science.sciencemag.org/content/371/6524/90](https://science.sciencemag.org
 /content/371/6524/90)
+
 **Evaluation**. Roughly speaking, when we assess your project report (and summary
 presentation) and code artifact, we'll be considering these dimensions:
 * Exposition: How well do the report and presentation explain the problem(s) and
