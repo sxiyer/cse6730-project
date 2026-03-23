@@ -4,9 +4,9 @@
 
 ### Team Members:
 
-- Denys Chernenko
-- Smaran Iyer
-- Adrian Lozada
+- Denys Chernenko: `dchernenko3@gatech.edu`
+- Smaran Iyer `siyer358@gatech.edu`
+- Adrian Lozada `alozada7@gatech.edu`
 
 ### Project Description:
 
