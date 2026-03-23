@@ -44,7 +44,21 @@ pip install .
 
 ### Running the Simulation:
 
-1. 
+1. To run the simulation run:
+
+```bash
+./scrirpts/run.sh
+```
+
+2. A terminal window will open. It will prompt for:
+
+- The number of players (must be an even number).
+
+- Wether to enable scalpers in the simulation `(y/n)`.
+
+- Wether to randomly generate pairs of players for each round or determentic `(y/n)`.
+
+3. The user can press `space` to advance to the next round, or `q` to quit the simulation.
 
 ---
 
