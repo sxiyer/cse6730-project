@@ -24,3 +24,14 @@ In this project, we will implement a Rock-Paper-Scissors (RPS) game simulation. 
 
 5. After each game, players can use their points to buy new cards from a card market. The card market will have a limited number of cards available, and the price of each card will fluctuate based on supply and demand.
 
+### Running the Simulation:
+
+1. Need to have *Python 3.12*.
+
+2. Create a virtual environment.
+
+3. Run the following command from the project's root dir to install the required dependencies:
+
+```bash
+pip install . 
+```
