@@ -26,7 +26,7 @@ In this project, we will implement a Rock-Paper-Scissors (RPS) game simulation. 
 
 ### Running the Simulation:
 
-1. Need to have *Python 3.12*.
+1. Need to have `Python 3.12`.
 
 2. Create a virtual environment.
 
