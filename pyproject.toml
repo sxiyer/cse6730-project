@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A rock-paper-scissor game simulation and analysis for CSE6730 course project."
 readme = "README.md"
 authors = [
-    { name = "ADRian123L", email = "alozada7@gatech.edu" }
+    { name = "alozada7", email = "alozada7@gatech.edu" }
 ]
 requires-python = ">=3.12"
 dependencies = [
