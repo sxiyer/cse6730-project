@@ -58,6 +58,8 @@ pip install .
 
 - Wether to randomly generate pairs of players for each round or determentic `(y/n)`.
 
+- Asks for the step (number of rounds) to run the simulation for a single `space` click.
+
 3. The user can press `space` to advance to the next round, or `q` to quit the simulation.
 
 4. The results will showed in the terminal, and a report will be generated in the `results/` directory.
