@@ -45,5 +45,6 @@ class SimulationApp:
 
     def _update(self, state):
         self.layout["header"].update(Header())
+        self.layout["leader_board"].update(LeaderBoard())
         self.layout["match_results"].update(MatchResults())
         self.layout["footer"].update(Footer())
