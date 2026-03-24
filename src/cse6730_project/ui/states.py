@@ -2,15 +2,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import readchar
+
 from rich.layout import Layout
 
-from .header import Header
-from .home_screen import HomeScreen
-from .footer import Footer
-from .leader_board import LeaderBoard
-from .match_results import MatchResults
-
-import readchar
+from .layouts import Header, Footer, HomeScreen, LeaderBoard, MatchResults, BasicLayout
 
 
 @dataclass
@@ -37,7 +33,9 @@ class AppState(ABC):
         """Render the state to the given layout."""
         pass
 
-    def _build_home_layout(self, context: SimulationContext) -> Layout:
+    def _build_home_layout(
+        self, context: SimulationContext, template_layout: BasicLayout
+    ) -> Layout:
         """Build the initial home screen layout."""
         layout = Layout()
         layout.split_column(
@@ -46,13 +44,15 @@ class AppState(ABC):
             Layout(name="footer", size=3),
         )
         layout["header"].update(Header())
-        layout["body"].update(HomeScreen(context.num_players, context.num_rounds))
+        layout["body"].update(template_layout)
         layout["footer"].update(Footer())
         return layout
 
-    def _update_home_layout(self, layout: Layout, context: SimulationContext) -> Layout:
+    def _update_home_layout(
+        self, layout: Layout, context: SimulationContext, template_layout: BasicLayout
+    ) -> Layout:
         """Update the home screen layout with new context values."""
-        layout["body"].update(HomeScreen(context.num_players, context.num_rounds))
+        layout["body"].update(template_layout)
         return layout
 
 
@@ -78,9 +78,13 @@ class HomePlayerState(AppState):
     def render(self, layout: Layout, context: SimulationContext) -> Layout:
         if not self.initialized:
             self.initialized = True
-            layout = self._build_home_layout(context)
+            layout = self._build_home_layout(
+                context, HomeScreen(context.num_players, context.num_rounds)
+            )
         else:
-            layout = self._update_home_layout(layout, context)
+            layout = self._update_home_layout(
+                layout, context, HomeScreen(context.num_players, context.num_rounds)
+            )
         return layout
 
 
@@ -106,9 +110,13 @@ class HomeRoundState(AppState):
     def render(self, layout: Layout, context: SimulationContext) -> Layout:
         if not self.initialized:
             self.initialized = True
-            layout = self._build_home_layout(context)
+            layout = self._build_home_layout(
+                context, HomeScreen(context.num_players, context.num_rounds)
+            )
         else:
-            layout = self._update_home_layout(layout, context)
+            layout = self._update_home_layout(
+                layout, context, HomeScreen(context.num_players, context.num_rounds)
+            )
         return layout
 
 
@@ -120,6 +128,10 @@ class RunningState(AppState):
             return None
         return self  # No transitions from running state for now
 
-    def render(self, layout: Layout) -> Layout:
+    def render(self, layout: Layout, context: SimulationContext) -> Layout:
         if not self.initialized:
             self.initialized = True
+            layout = self._build_home_layout(context, MatchResults())
+        else:
+            layout = self._update_home_layout(layout, context, MatchResults())
+        return layout
