@@ -12,7 +12,6 @@ class SimulationAPP:
     def __init__(self):
         self.layout = self._build_layout()
         self.console = Console()
-        pass
 
     def run(self):
         pass
