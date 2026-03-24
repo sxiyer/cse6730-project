@@ -39,7 +39,7 @@ class AppState(ABC):
         template_layout: BasicLayout | None = None,
         multi_layout: tuple[BasicLayout, BasicLayout] | None = None,
     ) -> Layout:
-        """Build the initial home screen layout."""
+        """Build the initial screen layout."""
         assert not (
             template_layout and multi_layout
         ), "Cannot provide both template and multi layouts"
@@ -69,7 +69,7 @@ class AppState(ABC):
         template_layout: BasicLayout | None = None,
         multi_layout: tuple[BasicLayout, BasicLayout] | None = None,
     ) -> Layout:
-        """Update the home screen layout with new context values."""
+        """Update the screen layout with new context values."""
         assert not (
             template_layout and multi_layout
         ), "Cannot provide both template and multi layouts"
@@ -79,6 +79,13 @@ class AppState(ABC):
             layout["leaderboard"].update(multi_layout[0])
             layout["match_results"].update(multi_layout[1])
         return layout
+
+
+class HomeState(AppState):
+    """Base state for the home screen."""
+
+    def __init__(self):
+        super().__init__()
 
     def render(self, layout: Layout, context: SimulationContext) -> Layout:
         if not self.initialized:
@@ -93,7 +100,7 @@ class AppState(ABC):
         return layout
 
 
-class HomePlayerState(AppState):
+class HomePlayerState(HomeState):
     """State for the home screen player selection."""
 
     def __init__(self):
@@ -116,7 +123,7 @@ class HomePlayerState(AppState):
         return self
 
 
-class HomeRoundState(AppState):
+class HomeRoundState(HomeState):
     """State for the home screen round selection."""
 
     def __init__(self):
