@@ -1,1 +1,3 @@
-from .app import SimulationAPP
+from .app import SimulationApp
+
+__all__ = ["SimulationApp"]

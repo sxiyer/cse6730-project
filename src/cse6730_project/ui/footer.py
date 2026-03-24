@@ -8,4 +8,5 @@ class Footer:
 
     def __rich__(self) -> Panel:
         text = Text(justify="center")
+        text.append("[dim][SPACE][/] next round    [dim][Q][/] quit & save")
         return Panel(text)

@@ -1,6 +1,8 @@
+import readchar
 from rich.console import Console
 from rich.layout import Layout
 from rich.table import Table
+from rich.live import Live
 
 from .footer import Footer
 from .header import Header
@@ -8,13 +10,26 @@ from .leader_board import LeaderBoard
 from .match_results import MatchResults
 
 
-class SimulationAPP:
+class SimulationApp:
     def __init__(self):
         self.layout = self._build_layout()
         self.console = Console()
 
     def run(self):
-        pass
+        with Live(
+            self.layout,
+            console=self.console,
+            screen=True,
+            transient=True,
+            refresh_per_second=4,
+        ):
+            self._update(None)
+            while True:
+                key = readchar.readkey()
+                if key.lower() == "q":
+                    break
+                elif key == " ":
+                    self._update(None)
 
     def _build_layout(self) -> Layout:
         layout = Layout()
