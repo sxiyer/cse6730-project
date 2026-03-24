@@ -74,7 +74,6 @@ cse6730-PROJECT/
 |-- scripts/         
 |-- |-- run.sh
 |-- src/cse6730_project/
-|-- |-- __init__.py
 |-- |-- agents.py          
 |-- |-- main.py             
 |-- |-- market.py          
