@@ -70,23 +70,26 @@ pip install .
 
 ```txt
 cse6730-PROJECT/
-|-- pyproject.toml          
-|-- uv.lock                 
-|-- README.md
-|-- scripts/run.sh          
+|-- results/              
+|-- scripts/         
+|-- |-- run.sh
 |-- src/cse6730_project/
 |-- |-- __init__.py
-|-- |-- main.py             
-|-- |-- simulator.py        
 |-- |-- agents.py          
+|-- |-- main.py             
 |-- |-- market.py          
-|-- |-- visualization.py   
 |-- |-- reporting.py       
+|-- |-- simulator.py        
+|-- |-- visualization.py   
 |-- |-- ui/
 |-- |-- |-- __init__.py
 |-- |-- |-- app.py
+|-- |-- |-- header.py
+|-- |-- |-- footer.py
 |-- |-- |-- leader_board.py
 |-- |-- |-- market_results.py
-|-- results/              
+|-- pyproject.toml          
 |-- tests/test_simulator.py 
+|-- README.md
+|-- uv.lock                 
 ```
