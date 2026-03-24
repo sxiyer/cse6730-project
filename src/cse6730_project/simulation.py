@@ -1,22 +1,20 @@
-#!/usr/bin/env python3
-"""Rock-Paper-Scissors Trading Card Game"""
-
 import os
 import random
 import sys
-from dataclasses import dataclass, field
 from enum import Enum
 
-# ── Constants ──────────────────────────────────────────────────────────────────
+import rich
 
-INITIAL_SUPPLY = 1000
-INITIAL_PRICE = 1.0
-STARTING_BUDGET = 15.0
-MAX_DECK_SIZE = 9
-BEST_OF = 5
-WINS_NEEDED = 3
-PRICE_HISTORY_LEN = 5
 
+from .config import (
+    INITIAL_SUPPLY,
+    INITIAL_PRICE,
+    MAX_DECK_SIZE,
+    BEST_OF,
+    WINS_NEEDED,
+    PRICE_HISTORY_LEN,
+    ROOT,
+)
 
 # ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -70,150 +68,6 @@ def colored(text: str, *codes: str) -> str:
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
-
-
-# ── Market ─────────────────────────────────────────────────────────────────────
-
-
-@dataclass
-class Market:
-    supply: dict[Card, int] = field(
-        default_factory=lambda: {c: INITIAL_SUPPLY for c in Card}
-    )
-    prices: dict[Card, float] = field(
-        default_factory=lambda: {c: INITIAL_PRICE for c in Card}
-    )
-    win_rates: dict[Card, float] = field(default_factory=lambda: {c: 0.5 for c in Card})
-    purchase_counts: dict[Card, int] = field(
-        default_factory=lambda: {c: 0 for c in Card}
-    )
-    price_history: dict[Card, list[float]] = field(
-        default_factory=lambda: {c: [INITIAL_PRICE] for c in Card}
-    )
-    wins_total: dict[Card, int] = field(default_factory=lambda: {c: 0 for c in Card})
-    plays_total: dict[Card, int] = field(default_factory=lambda: {c: 0 for c in Card})
-    round_number: int = 0
-
-    def buy(self, card: Card, qty: int = 1) -> float:
-        """Buy cards. Returns total cost. Raises ValueError if not enough supply."""
-        if self.supply[card] < qty:
-            raise ValueError(
-                f"Not enough {card.value} in supply (have {self.supply[card]})"
-            )
-        cost = self.prices[card] * qty
-        self.supply[card] -= qty
-        self.purchase_counts[card] += qty
-        return cost
-
-    def record_result(self, winner: Card, loser: Card):
-        self.wins_total[winner] += 1
-        self.plays_total[winner] += 1
-        self.plays_total[loser] += 1
-
-    def update_prices(self):
-        self.round_number += 1
-        total_purchases = max(sum(self.purchase_counts.values()), 1)
-        for card in Card:
-            plays = self.plays_total[card]
-            if plays > 0:
-                self.win_rates[card] = self.wins_total[card] / plays
-            else:
-                self.win_rates[card] = 0.5
-
-            purchase_volume = self.purchase_counts[card] / total_purchases
-            demand_factor = self.win_rates[card] + purchase_volume
-            supply_factor = self.supply[card] / INITIAL_SUPPLY
-            supply_factor = max(supply_factor, 0.01)  # avoid division by zero
-            self.prices[card] = round(
-                INITIAL_PRICE * (demand_factor / supply_factor), 2
-            )
-            self.prices[card] = max(self.prices[card], 0.01)  # minimum price
-
-            self.price_history[card].append(self.prices[card])
-            if len(self.price_history[card]) > PRICE_HISTORY_LEN:
-                self.price_history[card] = self.price_history[card][-PRICE_HISTORY_LEN:]
-
-        # Reset per-round purchase counts
-        self.purchase_counts = {c: 0 for c in Card}
-
-
-# ── Display helpers ────────────────────────────────────────────────────────────
-
-
-def print_header(text: str):
-    width = 60
-    print(colored("═" * width, C.DIM))
-    print(colored(f" {text}", C.BOLD, C.CYAN))
-    print(colored("═" * width, C.DIM))
-
-
-def print_subheader(text: str):
-    print(colored(f"\n  ── {text} ──", C.BOLD))
-
-
-def display_market(market: Market, budget: float):
-    print_header("MARKET")
-    print(f"  Budget: {colored(f'${budget:.2f}', C.GREEN, C.BOLD)}")
-    print(f"  Round:  {market.round_number + 1}\n")
-
-    # Table header
-    print(f"  {'Card':<14} {'Price':>8} {'Supply':>8} {'Win Rate':>10} {'Trend':>20}")
-    print(f"  {'─' * 62}")
-
-    for card in Card:
-        color = CARD_COLORS[card]
-        sym = CARD_SYMBOLS[card]
-        name = colored(f"{sym} {card.value}", color, C.BOLD)
-        price = colored(f"${market.prices[card]:.2f}", C.GREEN)
-        supply = f"{market.supply[card]}"
-        wr = f"{market.win_rates[card]:.0%}"
-
-        # Price trend (sparkline-style)
-        history = market.price_history[card]
-        trend_parts = []
-        for i, p in enumerate(history):
-            if i == 0:
-                trend_parts.append(f"${p:.2f}")
-            else:
-                prev = history[i - 1]
-                if p > prev:
-                    trend_parts.append(colored(f"${p:.2f}", C.GREEN))
-                elif p < prev:
-                    trend_parts.append(colored(f"${p:.2f}", C.RED))
-                else:
-                    trend_parts.append(f"${p:.2f}")
-        trend = " → ".join(trend_parts[-3:])  # show last 3 for space
-
-        # Pad name manually since it has ANSI codes
-        print(f"  {name}{'':>2} {price:>18} {supply:>8} {wr:>10}  {trend}")
-
-    print()
-
-
-def display_deck(label: str, deck: list[Card], hide: bool = False):
-    if hide:
-        cards_str = " ".join(colored("  ?  ", C.DIM) for _ in deck)
-        print(f"  {label}: [{cards_str}] ({len(deck)} cards)")
-    else:
-        cards_str = " ".join(
-            colored(f" {CARD_SYMBOLS[c]}{c.value[0]} ", CARD_COLORS[c], C.BOLD)
-            for c in deck
-        )
-        print(f"  {label}: [{cards_str}] ({len(deck)} cards)")
-
-
-def display_scoreboard(player_wins: int, ai_wins: int):
-    p = colored(str(player_wins), C.GREEN, C.BOLD)
-    a = colored(str(ai_wins), C.RED, C.BOLD)
-    print(f"\n  Score: You {p} — {a} AI  (first to {WINS_NEEDED})")
-
-
-def display_stats(total_wins: int, total_losses: int, total_spent: float):
-    print_subheader("PLAYER STATS")
-    print(f"  Games Won:    {colored(str(total_wins), C.GREEN, C.BOLD)}")
-    print(f"  Games Lost:   {colored(str(total_losses), C.RED, C.BOLD)}")
-    print(f"  Total Spent:  {colored(f'${total_spent:.2f}', C.YELLOW)}")
-    print()
 
 
 # ── Deck building ──────────────────────────────────────────────────────────────

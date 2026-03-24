@@ -8,7 +8,7 @@ class LeaderBoard:
     def __init__(self):
         pass
 
-    def __rich__(self):
+    def __rich__(self) -> Table:
         table = Table(
             title="Leader Board",
             title_justify="center",

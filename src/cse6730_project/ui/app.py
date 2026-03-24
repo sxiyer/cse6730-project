@@ -1,4 +1,5 @@
 import readchar
+
 from rich.console import Console
 from rich.layout import Layout
 from rich.table import Table
