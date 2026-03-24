@@ -34,7 +34,9 @@ class SimulationApp:
     def _build_layout(self) -> Layout:
         layout = Layout()
         layout.split_column(
-            Layout(name="header"), Layout(name="body"), Layout(name="footer")
+            Layout(name="header", size=3),
+            Layout(name="body"),
+            Layout(name="footer", size=3),
         )
         layout["body"].split_row(
             Layout(name="leader_board"), Layout(name="match_results")
@@ -43,4 +45,5 @@ class SimulationApp:
 
     def _update(self, state):
         self.layout["header"].update(Header())
+        self.layout["match_results"].update(MatchResults())
         self.layout["footer"].update(Footer())
