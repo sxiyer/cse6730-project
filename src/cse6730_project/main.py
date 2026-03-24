@@ -1,8 +1,9 @@
-from .ui import SimulationAPP
+from cse6730_project import SimulationApp
 
 
 def main():
-    sim = SimulationAPP()
+    sim = SimulationApp()
+    sim.run()
 
 
 if __name__ == "__main__":
