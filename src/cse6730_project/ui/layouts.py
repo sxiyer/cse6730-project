@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 import random
 
@@ -8,7 +7,6 @@ from rich.text import Text
 from rich.panel import Panel
 
 
-@abstractmethod
 class BasicLayout(ABC):
     @abstractmethod
     def __rich__(self) -> Panel | Table:
@@ -33,6 +31,7 @@ class Footer(BasicLayout):
 
 
 class HomeScreen(BasicLayout):
+
     def __init__(self, num_players: int = 2, num_rounds: int = 1):
         self.num_players = num_players
         self.num_rounds = num_rounds
@@ -47,9 +46,6 @@ class HomeScreen(BasicLayout):
 
 
 class MatchResults(BasicLayout):
-    def __init__(self):
-
-        pass
 
     def __rich__(self) -> Table:
         table = Table(
