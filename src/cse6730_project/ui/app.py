@@ -27,5 +27,6 @@ class SimulationAPP:
         )
         return layout
 
-    def _update(self):
-        pass
+    def _update(self, state):
+        self.layout["header"].update(Header())
+        self.layout["footer"].update(Footer())
