@@ -1,4 +1,4 @@
-from cse6730_project import SimulationApp
+from ui import SimulationApp
 
 
 def main():
