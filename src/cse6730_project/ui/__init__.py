@@ -1,3 +1,1 @@
-from rich.console import Console
-
-console = Console()
+from .app import SimulationAPP
