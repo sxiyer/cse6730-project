@@ -24,7 +24,6 @@ class SimulationApp:
             transient=True,
             refresh_per_second=4,
         ):
-            self._update(None)
             while True:
                 key = readchar.readkey()
                 if key.lower() == "q":
@@ -42,6 +41,10 @@ class SimulationApp:
         layout["body"].split_row(
             Layout(name="leader_board"), Layout(name="match_results")
         )
+        self.layout["header"].update(Header())
+        self.layout["leader_board"].update(LeaderBoard())
+        self.layout["match_results"].update(MatchResults())
+        self.layout["footer"].update(Footer())
         return layout
 
     def _update(self, state):
