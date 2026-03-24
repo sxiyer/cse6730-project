@@ -3,12 +3,14 @@ from rich.panel import Panel
 
 
 class HomeScreen:
-    def __init__(self):
-        pass
+    def __init__(self, num_players: int = 2, num_rounds: int = 1):
+        self.num_players = num_players
+        self.num_rounds = num_rounds
 
     def __rich__(self) -> Panel:
-        table = Table(title="Welcome to the CSE6730 Simulation!")
-        table.add_column("Instructions", justify="center")
-        table.add_row("Press [SPACE] to start the simulation.")
-        table.add_row("Press [Q] to quit and save the simulation.")
+        table = Table(title="R.P.S. Simulation", title_justify="center")
+        table.add_column("Parameters", justify="center")
+        table.add_column("Value", justify="center")
+        table.add_row("Number of Players", str(self.num_players))
+        table.add_row("Number of Rounds", str(self.num_rounds))
         return Panel(table)
