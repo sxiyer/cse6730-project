@@ -29,14 +29,20 @@ class AppState(ABC):
         pass
 
     @abstractmethod
-    def render(self, layout: Layout, context: SimulationContext) -> Layout | None:
+    def render(self, layout: Layout, context: SimulationContext) -> Layout:
         """Render the state to the given layout."""
         pass
 
-    def _build_home_layout(
-        self, context: SimulationContext, template_layout: BasicLayout
+    def _build_layout(
+        self,
+        context: SimulationContext,
+        template_layout: BasicLayout | None = None,
+        multi_layout: tuple[BasicLayout, BasicLayout] | None = None,
     ) -> Layout:
         """Build the initial home screen layout."""
+        assert not (
+            template_layout and multi_layout
+        ), "Cannot provide both template and multi layouts"
         layout = Layout()
         layout.split_column(
             Layout(name="header", size=3),
@@ -44,20 +50,54 @@ class AppState(ABC):
             Layout(name="footer", size=3),
         )
         layout["header"].update(Header())
-        layout["body"].update(template_layout)
+        if template_layout is not None:
+            layout["body"].update(template_layout)
+        elif multi_layout is not None:
+            layout["body"].split_row(
+                Layout(name="leaderboard"),
+                Layout(name="match_results"),
+            )
+            layout["leaderboard"].update(multi_layout[0])
+            layout["match_results"].update(multi_layout[1])
         layout["footer"].update(Footer())
         return layout
 
-    def _update_home_layout(
-        self, layout: Layout, context: SimulationContext, template_layout: BasicLayout
+    def _update_layout(
+        self,
+        layout: Layout,
+        context: SimulationContext,
+        template_layout: BasicLayout | None = None,
+        multi_layout: tuple[BasicLayout, BasicLayout] | None = None,
     ) -> Layout:
         """Update the home screen layout with new context values."""
-        layout["body"].update(template_layout)
+        assert not (
+            template_layout and multi_layout
+        ), "Cannot provide both template and multi layouts"
+        if template_layout is not None:
+            layout["body"].update(template_layout)
+        elif multi_layout is not None:
+            layout["leaderboard"].update(multi_layout[0])
+            layout["match_results"].update(multi_layout[1])
+        return layout
+
+    def render(self, layout: Layout, context: SimulationContext) -> Layout:
+        if not self.initialized:
+            self.initialized = True
+            layout = self._build_layout(
+                context, HomeScreen(context.num_players, context.num_rounds)
+            )
+        else:
+            layout = self._update_layout(
+                layout, context, HomeScreen(context.num_players, context.num_rounds)
+            )
         return layout
 
 
 class HomePlayerState(AppState):
     """State for the home screen player selection."""
+
+    def __init__(self):
+        super().__init__()
 
     def handle_input(self, key: str, context: SimulationContext) -> AppState | None:
         """Handle input for the home player state."""
@@ -75,21 +115,12 @@ class HomePlayerState(AppState):
             return None
         return self
 
-    def render(self, layout: Layout, context: SimulationContext) -> Layout:
-        if not self.initialized:
-            self.initialized = True
-            layout = self._build_home_layout(
-                context, HomeScreen(context.num_players, context.num_rounds)
-            )
-        else:
-            layout = self._update_home_layout(
-                layout, context, HomeScreen(context.num_players, context.num_rounds)
-            )
-        return layout
-
 
 class HomeRoundState(AppState):
     """State for the home screen round selection."""
+
+    def __init__(self):
+        super().__init__()
 
     def handle_input(self, key: str, context: SimulationContext) -> AppState | None:
         """Handle input for the home round state."""
@@ -107,21 +138,12 @@ class HomeRoundState(AppState):
             return None
         return self
 
-    def render(self, layout: Layout, context: SimulationContext) -> Layout:
-        if not self.initialized:
-            self.initialized = True
-            layout = self._build_home_layout(
-                context, HomeScreen(context.num_players, context.num_rounds)
-            )
-        else:
-            layout = self._update_home_layout(
-                layout, context, HomeScreen(context.num_players, context.num_rounds)
-            )
-        return layout
-
 
 class RunningState(AppState):
     """State for the main simulation running."""
+
+    def __init__(self):
+        super().__init__()
 
     def handle_input(self, key: str, context: SimulationContext) -> AppState | None:
         if key.lower() == "q":
@@ -131,7 +153,11 @@ class RunningState(AppState):
     def render(self, layout: Layout, context: SimulationContext) -> Layout:
         if not self.initialized:
             self.initialized = True
-            layout = self._build_home_layout(context, MatchResults())
+            layout = self._build_layout(
+                context, multi_layout=(LeaderBoard(), MatchResults())
+            )
         else:
-            layout = self._update_home_layout(layout, context, MatchResults())
+            layout = self._update_layout(
+                layout, context, multi_layout=(LeaderBoard(), MatchResults())
+            )
         return layout
