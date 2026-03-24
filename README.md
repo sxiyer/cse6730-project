@@ -69,18 +69,24 @@ pip install .
 ### Project Structure:
 
 ```txt
-rps-scalpers/
+cse6730-PROJECT/
 |-- pyproject.toml          
 |-- uv.lock                 
 |-- README.md
 |-- scripts/run.sh          
-|-- src/rps_sim/
+|-- src/cse6730_project/
+|-- |-- __init__.py
 |-- |-- main.py             
 |-- |-- simulator.py        
 |-- |-- agents.py          
 |-- |-- market.py          
 |-- |-- visualization.py   
 |-- |-- reporting.py       
+|-- |-- ui/
+|-- |-- |-- __init__.py
+|-- |-- |-- app.py
+|-- |-- |-- leader_board.py
+|-- |-- |-- market_results.py
 |-- results/              
 |-- tests/test_simulator.py 
 ```
