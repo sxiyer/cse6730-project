@@ -1,6 +1,7 @@
 import random
 
 from rich.table import Table
+from rich import box
 
 
 class MatchResults:
@@ -12,6 +13,8 @@ class MatchResults:
         table = Table(
             title="Match Results",
             title_justify="center",
+            expand=True,
+            box=box.ASCII_DOUBLE_HEAD,
         )
         table.add_column("Players", justify="center")
         table.add_column("Winner", justify="center")
