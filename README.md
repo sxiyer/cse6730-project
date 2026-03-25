@@ -1,3 +1,6 @@
+| R.P.S SIMULATION |
+|: --- :| 
+| ![UI](figures/ui.png) |
 # CSE6730 Final Project
 
 ## Group 10 
