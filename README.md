@@ -16,14 +16,11 @@
 
 ### Team Members:
 
-<div align="center">
 | Name | Email |
 |:-----|:------|
 | Denys Chernenko | `dchernenko3@gatech.edu` |
 | Smaran Iyer | `siyer358@gatech.edu` |
 | Adrian Lozada | `alozada7@gatech.edu` |
-
-</div>
 
 ---
 
@@ -115,3 +112,7 @@ cse6730-PROJECT/
 |-- README.md
 |-- uv.lock                 
 ```
+
+<div align="center">
+<sub>CSE 6730 · Modeling & Simulation x Georgia Institute of Technology x Spring 2026</sub>
+</div>
