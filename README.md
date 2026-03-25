@@ -23,7 +23,7 @@
 | Smaran Iyer | `siyer358@gatech.edu` |
 | Adrian Lozada | `alozada7@gatech.edu` |
 
-</div align="center">
+</div>
 
 ---
 
