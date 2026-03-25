@@ -1,12 +1,10 @@
-| R.P.S SIMULATION |
+| Rock x Paper x Scissors - Agent-Based Market Simulation |
 |:----:| 
 | ![UI](figures/output.gif) | 
 
 # CSE6730 Final Project
 
 ## Group 10 
-
-### Rock x Paper x Scissors - Agent-Based Market Simulation
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
 ![uv](https://img.shields.io/badge/package_manager-uv-DE5FE9?style=flat-square)
