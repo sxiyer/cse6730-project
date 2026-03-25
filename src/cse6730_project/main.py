@@ -1,8 +1,9 @@
 from ui import SimulationApp
+from agents import Player
 
 
 def main():
-    sim = SimulationApp()
+    sim = SimulationApp()  # TODO: need to pass agent as a parameter
     sim.run()
 
 
