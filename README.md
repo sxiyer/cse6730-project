@@ -10,6 +10,12 @@
 ![uv](https://img.shields.io/badge/package_manager-uv-DE5FE9?style=flat-square)
 ![GT](https://img.shields.io/badge/Georgia_Tech-CSE6730-B3A369?style=flat-square)
 
+<p align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=python" />
+  </a>
+</p>
+
 --- 
 
 ### Team Members:
