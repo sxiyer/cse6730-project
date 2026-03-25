@@ -1,6 +1,3 @@
-| R.P.S SIMULATION |
-|: --- :| 
-| ![UI](figures/ui.png) |
 # CSE6730 Final Project
 
 ## Group 10 
@@ -10,6 +7,10 @@
 - Denys Chernenko: `dchernenko3@gatech.edu`
 - Smaran Iyer `siyer358@gatech.edu`
 - Adrian Lozada `alozada7@gatech.edu`
+
+| R.P.S SIMULATION |
+|: --- :| 
+| ![UI](figures/output.gif) |
 
 ---
 
