@@ -14,7 +14,7 @@ class SimulationContext:
     """Context for the simulation, holding all relevant state."""
 
     num_players: int = 2
-    num_rounds: int = 1
+    step_size: int = 1
 
 
 class AppState(ABC):
@@ -91,11 +91,11 @@ class HomeState(AppState):
         if not self.initialized:
             self.initialized = True
             layout = self._build_layout(
-                context, HomeScreen(context.num_players, context.num_rounds)
+                context, HomeScreen(context.num_players, context.step_size)
             )
         else:
             layout = self._update_layout(
-                layout, context, HomeScreen(context.num_players, context.num_rounds)
+                layout, context, HomeScreen(context.num_players, context.step_size)
             )
         return layout
 
@@ -109,7 +109,7 @@ class HomePlayerState(HomeState):
     def handle_input(self, key: str, context: SimulationContext) -> AppState | None:
         """Handle input for the home player state."""
         if key == " ":
-            return HomeRoundState()
+            return HomeStepSize()
         elif key == readchar.key.UP:
             context.num_players = min(
                 context.num_players * 2, 2**20
@@ -123,7 +123,7 @@ class HomePlayerState(HomeState):
         return self
 
 
-class HomeRoundState(HomeState):
+class HomeStepSize(HomeState):
     """State for the home screen round selection."""
 
     def __init__(self):
@@ -134,12 +134,10 @@ class HomeRoundState(HomeState):
         if key == " ":
             return RunningState()
         elif key == readchar.key.UP:
-            context.num_rounds = min(
-                context.num_rounds * 2, 2**10
-            )  # Cap at 2^10 rounds
+            context.step_size = min(context.step_size * 2, 2**10)  # Cap at 2^10 rounds
             return self
         elif key == readchar.key.DOWN:
-            context.num_rounds = max(1, context.num_rounds // 2)
+            context.step_size = max(1, context.step_size // 2)
             return self
         elif key.lower() == "q":
             return None
