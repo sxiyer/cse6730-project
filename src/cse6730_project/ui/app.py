@@ -33,3 +33,4 @@ class SimulationApp:
                 if self.state is not None:
                     self.layout = self.state.render(self.layout, self.context)
                     live.update(self.layout)
+                # simulation.step()
