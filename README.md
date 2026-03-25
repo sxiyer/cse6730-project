@@ -76,6 +76,8 @@ pip install .
 ```txt
 cse6730-PROJECT/
 |-- results/              
+|-- figures/
+|-- |-- output.gif
 |-- scripts/         
 |-- |-- run.sh
 |-- src/cse6730_project/
@@ -85,13 +87,20 @@ cse6730-PROJECT/
 |-- |-- reporting.py       
 |-- |-- simulator.py        
 |-- |-- visualization.py   
+|-- |-- games/
+|-- |-- |-- __init__.py
+|-- |-- |-- game_skeleton.py
+|-- |-- |-- markets/
+|-- |-- |-- __init__.py
+|-- |-- |-- |-- market_skeleton.py
+|-- |-- |-- agents/
+|-- |-- |-- __init__.py
+|-- |-- |-- |-- player_skeleton.py
 |-- |-- ui/
 |-- |-- |-- __init__.py
 |-- |-- |-- app.py
-|-- |-- |-- header.py
-|-- |-- |-- footer.py
-|-- |-- |-- leader_board.py
-|-- |-- |-- market_results.py
+|-- |-- |-- states.py
+|-- |-- |-- layouts.py
 |-- pyproject.toml          
 |-- tests/test_simulator.py 
 |-- README.md
