@@ -6,11 +6,17 @@
 
 ## Group 10 
 
+### Rock x Paper x Scissors - Agent-Based Market Simulation
+
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
+
 ### Team Members:
 
-- Denys Chernenko: `dchernenko3@gatech.edu`
-- Smaran Iyer `siyer358@gatech.edu`
-- Adrian Lozada `alozada7@gatech.edu`
+| Name | Email |
+|:-----|:------|
+| Denys Chernenko | `dchernenko3@gatech.edu` |
+| Smaran Iyer | `siyer358@gatech.edu` |
+| Adrian Lozada | `alozada7@gatech.edu` |
 
 
 ---
@@ -49,25 +55,22 @@ pip install .
 
 ### Running the Simulation:
 
-1. To run the simulation run:
+| Prompt | Description |
+|:-------|:------------|
+| Number of players | Must be even |
+| Enable scalpers | `y/n` |
+| Pairing mode | Random or deterministic `y/n` |
+| Step size | Rounds per `SPACE` press |
 
-```bash
-./scrirpts/run.sh
-```
+**Controls during simulation:**
 
-2. A terminal window will open. It will prompt for:
+| Key | Action |
+|:----|:-------|
+| `SPACE` | Advance to next round |
+| `↑` / `↓` | Adjust parameters on setup screens |
+| `Q` | Quit and save results |
 
-- The number of players (must be an even number).
-
-- Wether to enable scalpers in the simulation `(y/n)`.
-
-- Wether to randomly generate pairs of players for each round or determentic `(y/n)`.
-
-- Asks for the step (number of rounds) to run the simulation for a single `space` click.
-
-3. The user can press `space` to advance to the next round, or `q` to quit the simulation.
-
-4. The results will showed in the terminal, and a report will be generated in the `results/` directory.
+Results are saved to `results/` after the session ends.
 
 ---
 
