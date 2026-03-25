@@ -1,3 +1,7 @@
+| R.P.S SIMULATION |
+|:----:| 
+| ![UI](figures/output.gif) | 
+
 # CSE6730 Final Project
 
 ## Group 10 
@@ -8,9 +12,6 @@
 - Smaran Iyer `siyer358@gatech.edu`
 - Adrian Lozada `alozada7@gatech.edu`
 
-| R.P.S SIMULATION |
-|: --- :| 
-| ![UI](figures/output.gif) |
 
 ---
 
