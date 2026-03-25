@@ -9,6 +9,10 @@
 ### Rock x Paper x Scissors - Agent-Based Market Simulation
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
+![uv](https://img.shields.io/badge/package_manager-uv-DE5FE9?style=flat-square)
+![GT](https://img.shields.io/badge/Georgia_Tech-CSE6730-B3A369?style=flat-square)
+
+--- 
 
 ### Team Members:
 
