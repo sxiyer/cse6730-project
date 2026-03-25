@@ -68,7 +68,7 @@ pip install .
 | Key | Action |
 |:----|:-------|
 | `SPACE` | Advance to next round |
-| `🔼` / `⬇️` | Adjust parameters on setup screens |
+| `🔼` / `🔽` | Adjust parameters on setup screens |
 | `Q` | Quit and save results |
 
 Results are saved to `results/` after the session ends.
