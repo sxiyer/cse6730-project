@@ -10,8 +10,8 @@ class Card(Enum):
 
 
 class TypeExchanges(Enum):
-    sell = auto()
-    buy = auto()
+    Sell = auto()
+    Buy = auto()
 
 
 @dataclass
