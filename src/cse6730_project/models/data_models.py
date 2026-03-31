@@ -3,7 +3,7 @@ from enum import Enum, auto
 import uuid
 
 
-class Cards(Enum):
+class Card(Enum):
     Rock = "R"
     Paper = "P"
     Scissor = "S"
@@ -25,6 +25,6 @@ class CardValues:
 class Order:
     agent_uid: uuid.UUID
     tick: int
-    cardType: Cards
+    cardType: Card
     orderType: TypeExchanges
     limitPrice: float
