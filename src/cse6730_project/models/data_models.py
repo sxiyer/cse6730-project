@@ -25,6 +25,6 @@ class CardValues:
 class Order:
     agent_uid: uuid.UUID
     tick: int
-    cardType: Card
-    orderType: TypeExchanges
-    limitPrice: float
+    card_type: Card
+    order_type: TypeExchanges
+    limit_price: float
