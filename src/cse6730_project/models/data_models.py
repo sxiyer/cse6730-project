@@ -4,12 +4,12 @@ import uuid
 
 
 class Cards(Enum):
-    Rock = auto()
-    Paper = auto()
-    Scissor = auto()
+    Rock = "R"
+    Paper = "P"
+    Scissor = "S"
 
 
-class TypeExhanges(Enum):
+class TypeExchanges(Enum):
     sell = auto()
     buy = auto()
 
@@ -26,4 +26,5 @@ class Order:
     agent_uid: uuid.UUID
     tick: int
     cardType: Cards
-    orderType: TypeExhanges
+    orderType: TypeExchanges
+    limitPrice: float
