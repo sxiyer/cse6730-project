@@ -9,6 +9,11 @@ class Cards(Enum):
     Scissor = auto()
 
 
+class TypeExhanges(Enum):
+    sell = auto()
+    buy = auto()
+
+
 @dataclass
 class CardValues:
     rock: float
@@ -21,3 +26,4 @@ class Order:
     agent_uid: uuid.UUID
     tick: int
     cardType: Cards
+    orderType: TypeExhanges
