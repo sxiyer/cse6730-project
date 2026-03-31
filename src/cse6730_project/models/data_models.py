@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum
 import uuid
 
 
@@ -10,8 +10,8 @@ class Card(Enum):
 
 
 class TypeExchanges(Enum):
-    Sell = auto()
-    Buy = auto()
+    Sell = "Sell"
+    Buy = "Buy"
 
 
 @dataclass
