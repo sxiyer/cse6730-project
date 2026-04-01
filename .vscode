@@ -1,0 +1,3 @@
+{
+    "python.analysis.extraPaths": ["./src/cse6730_project"]
+}
