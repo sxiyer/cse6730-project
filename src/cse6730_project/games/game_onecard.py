@@ -1,4 +1,4 @@
-from game import Game, GameResultType
+from games import Game, GameResultType
 
 class GameOneCard(Game):
 
