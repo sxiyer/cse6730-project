@@ -1,14 +1,17 @@
-from agent import Player
 from enum import Enum
 from abc import ABC, abstractmethod
-from cards import Card
-from constants import PAYOFF
+
+from models import Card 
+from ..config import PAYOFF
+from ..agents import Player
 
 class GameResultType(Enum):
-    WIN = "win" # somebody won
-    TIE = "tie" # tie
+    WIN = "win"     # somebody won
+    LOSS = "loss"   # here for losers to know they lost
+    TIE = "tie"     # tie
 
-class Game:
+
+class Game(ABC):
     def __init__(self, player1:Player, player2:Player):
         self.result: GameResultType | None = None
         self.loser: Player | None = None
@@ -44,3 +47,5 @@ class Game:
     def player2(self) -> Player:
         return self.players[1]
         
+
+

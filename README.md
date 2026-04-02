@@ -1,18 +1,18 @@
 | Rock x Paper x Scissors - Agent-Based Market Simulation |
 |:----:| 
-| ![UI](figures/output.gif) | 
+| ![UI](figures/output.gif) |
 
 # CSE6730 Final Project
 
-## Group 10 
+## Group 10
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
 ![uv](https://img.shields.io/badge/package_manager-uv-DE5FE9?style=flat-square)
 ![GT](https://img.shields.io/badge/Georgia_Tech-CSE6730-B3A369?style=flat-square)
 
---- 
+--- ;
 
-### Team Members:
+### Team Members
 
 | Name | Email |
 |:-----|:------|
@@ -20,13 +20,13 @@
 | Smaran Iyer | `siyer358@gatech.edu` |
 | Adrian Lozada | `alozada7@gatech.edu` |
 
----
+--- ;
 
-### 📺 Project Description:
+### 📺 Project Description
 
-In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulation. The simulation will involve multiple agents playing against each other. There will be two types of agents: **players** and **scalpers**. Players will play against each other. Scalpers will act as intermeiaries who profit from discrepciens in card values or high-demand card shortages. The _objective_ of **players** is `to win as much games as possible`. **Scalpers** main _goal_ is to predict the future value of cards and buy and sell them `to make a profit`. In this simulation, cards can be traded for points (the currency of the game). Players and Scalpers can use their points to buy and sell cards. The game will be played in rounds, and at the end of each round, the player that won will recieve one point. 
+In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulation. The simulation will involve multiple agents playing against each other. There will be two types of agents: **players** and **scalpers**. Players will play against each other. Scalpers will act as intermediaries who profit from discrepancies in card values or high-demand card shortages. The _objective_ of **players** is `to win as much games as possible`. **Scalpers** main _goal_ is to predict the future value of cards and buy and sell them `to make a profit`. In this simulation, cards can be traded for points (the currency of the game). Players and Scalpers can use their points to buy and sell cards. The game will be played in rounds, and at the end of each round, the player that won will receive one point.
 
-### 🕹️ Game Rules:
+### 🕹️ Game Rules
 
 1. Each player starts with a deck of 9 cards, consisting of randomly generated combinations of rock, paper, and scissors. There will be a even number of players.
 
@@ -38,7 +38,7 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 
 5. After each game, players can use their points to buy new cards from a card market. The card market will have a limited number of cards available, and the price of each card will fluctuate based on supply and demand.
 
---- 
+--- ;
 
 ### Setup Instructions:
 
@@ -52,9 +52,9 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 pip install . 
 ```
 
---- 
+--- ;
 
-### Running the Simulation:
+### Running the Simulation
 
 | Prompt | Description |
 |:-------|:------------|
@@ -73,9 +73,9 @@ pip install .
 
 Results are saved to `results/` after the session ends.
 
----
+--- ;
 
-### Project Structure:
+### Project Structure
 
 ```txt
 cse6730-PROJECT/
