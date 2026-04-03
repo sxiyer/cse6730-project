@@ -2,26 +2,30 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Any
 
-from ..models import Order
+from ..models import Order, Card
 
 
 class Market(ABC):
     def __init__(
         self,
-        player_info: dict[UUID, Any],
-        scalper_info: dict[UUID, Any],
-        game_pairs: list,
-        sell_list: list,
-        buy_list: list,
+        name: str,
+        player_info: dict[UUID, Any] | None = None,
+        scalper_info: dict[UUID, Any] | None = None,
+        game_pairs: list | None = None,
+        sell_list: list | None = None,
+        buy_list: list | None = None,
     ):
         self.player_info = player_info
         self.scalper_info = scalper_info
         self.game_pairs = game_pairs
         self.sell_list = sell_list
         self.buy_list = buy_list
+        self.name = name
+        self.stock = {card: 0 for card in Card}
+        self.prices = {card: 0.0 for card in Card}
 
     @abstractmethod
-    def submit_order(self, order: Order) -> None:
+    def submit_order(self, order: Order) -> bool:
         pass
 
     @abstractmethod
@@ -38,19 +42,4 @@ class Market(ABC):
 
     @abstractmethod
     def shuffleOrder(self) -> None:
-        pass
-
-
-from cards import Card
-from order import *
-from abc import ABC, abstractmethod
-
-class Market:
-    def __init__(self, name:str):
-       self.name = name
-       self.stock = {card: 0 for card in Card}
-       self.prices = {card: 0.0 for card in Card}
-       
-    @abstractmethod
-    def submit_order(self, order: Order) -> bool:
         pass

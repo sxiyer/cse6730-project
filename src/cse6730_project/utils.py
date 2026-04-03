@@ -1,4 +1,4 @@
-from constants import RNG_SEED
+from .config import RNG_SEED
 
 import logging
 import random

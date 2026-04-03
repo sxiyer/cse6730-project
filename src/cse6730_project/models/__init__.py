@@ -1,1 +1,1 @@
-from .data_models import Card, Order
+from .data_models import Card, Order, OrderType

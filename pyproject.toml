@@ -24,7 +24,7 @@ requires = ["uv_build>=0.10.12,<0.11.0"]
 build-backend = "uv_build"
 
 [tool.pytest.ini_options]
-pythonpath = ["src/cse6730_project"]
+pythonpath = ["src"]
 
 [dependency-groups]
 dev = [

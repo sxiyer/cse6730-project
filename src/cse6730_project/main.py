@@ -1,4 +1,4 @@
-from ui import SimulationApp
+from .ui import SimulationApp
 
 
 def main():
