@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from ..agents import Agent, Player, Scalper
 from ..market import Market
