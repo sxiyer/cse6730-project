@@ -9,8 +9,8 @@ class Scalper(Agent):
 
     pass
 
-    def buy_order(self):
+    def buy_order(self) -> None:
         return None
 
-    def sell_order(self):
+    def sell_order(self) -> None:
         return None
