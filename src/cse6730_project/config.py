@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 
-from models import Card
+from .models import Card
 
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
@@ -20,7 +20,7 @@ LINES = 10
 os.environ["COLUMNS"] = str(COLUMNS)
 os.environ["LINES"] = str(LINES)
 
-RNG_SEED = 69
+RNG_SEED = 420 
 
 PLAYER_STARTING_MONEY = 0.0
 SCALPER_STARTING_MONEY = 0.0
