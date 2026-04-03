@@ -8,7 +8,7 @@ class MarketCommon(Market):
         self.stock = {card: 1000 for card in Card}
         self.prices = {card: 1.0 for card in Card}
 
-    def submit_order(self, order):
+    def submit_order(self, order) -> bool:
         # BUY ORDER
         if order.order_type == OrderType.BUY:
             if order.quantity <= self.stock[order.card_type]:

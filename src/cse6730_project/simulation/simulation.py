@@ -69,11 +69,13 @@ class Simulation:
         # Initialize some basic players according to specified player_type
 
         for i in range(num_players):
-            p = self.player_type(uid=UUID(int=i), money=PLAYER_STARTING_MONEY)
+            p: Player = self.player_type(uid=UUID(int=i), money=PLAYER_STARTING_MONEY)
             self.players.append(p)
 
         for i in range(num_scalpers):
-            s = self.scalper_type(uid=UUID(int=i), money=SCALPER_STARTING_MONEY)
+            s: Scalper = self.scalper_type(
+                uid=UUID(int=i), money=SCALPER_STARTING_MONEY
+            )
             self.scalpers.append(s)
 
     def step(self):
@@ -84,7 +86,7 @@ class Simulation:
         self.marketClears()  # Market processes orders
         self.recordState()  # Record meaningful info from this tick
 
-    def matchPlayers(self):
+    def matchPlayers(self) -> None:
         playersLower = self.players[0 : self.num_players // 2]
         playersUpper = self.players[self.num_players // 2 :]
 
@@ -97,7 +99,7 @@ class Simulation:
 
         self.matches = matches_arr
 
-    def buildGames(self):
+    def buildGames(self) -> None:
         for match in self.matches:
             logger.debug(f"Building match at tick {self.current_tick}")
 
@@ -113,7 +115,7 @@ class Simulation:
             logger.debug(f"Game created, adding to games, GAME: {game}")
             self.games.append(game)
 
-    def playGames(self):
+    def playGames(self) -> None:
         for game in self.games:
             game.play()
             if game.result == GameResultType.WIN:
@@ -125,19 +127,19 @@ class Simulation:
             else:
                 logger.debug(f"Game {game} complete! Result: TIE")
 
-    def playersUpdate(self):
+    def playersUpdate(self) -> None:
         # TODO: Tell the players to place orders based on the outcomes of the games
         pass
 
-    def marketClears(self):
+    def marketClears(self) -> None:
         # TODO: Market processes orders
         pass
 
-    def recordState(self):
+    def recordState(self) -> None:
         # TODO: Record the important information from the current tick
         pass
 
-    def run(self):
+    def run(self) -> None:
         for i in range(self.num_ticks):
             self.step()
             self.current_tick += 1

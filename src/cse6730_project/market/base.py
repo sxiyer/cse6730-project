@@ -37,7 +37,7 @@ class Market(ABC):
         pass
 
     @abstractmethod
-    def getBalance(self):
+    def getBalance(self) -> None:
         pass
 
     @abstractmethod

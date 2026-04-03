@@ -8,6 +8,6 @@ class MarketSimple(Market):
         self.stock = {card: 1000 for card in Card}
         self.prices = {card: 1.0 for card in Card}
 
-    def submit_order(self, order):
+    def submit_order(self, order) -> bool:
         # Any order is successful
         return True
