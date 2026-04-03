@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
@@ -18,7 +20,7 @@ class TestSimulation:
         A basic simulation initializes with no market and 100 agents
         """
         assert len(basicSimulation.players) == 100
-        assert basicSimulation.players[69].UID == 69
+        assert basicSimulation.players[69].UID == UUID(int=69)
         assert len(basicSimulation.scalpers) == 10
 
     def test_run(self, basicSimulation):

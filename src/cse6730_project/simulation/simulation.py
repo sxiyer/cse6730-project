@@ -69,11 +69,11 @@ class Simulation:
         # Initialize some basic players according to specified player_type
 
         for i in range(num_players):
-            p = self.player_type(uid=uuid4(), money=PLAYER_STARTING_MONEY)
+            p = self.player_type(uid=UUID(int=i), money=PLAYER_STARTING_MONEY)
             self.players.append(p)
 
         for i in range(num_scalpers):
-            s = self.scalper_type(uid=uuid4(), money=SCALPER_STARTING_MONEY)
+            s = self.scalper_type(uid=UUID(int=i), money=SCALPER_STARTING_MONEY)
             self.scalpers.append(s)
 
     def step(self):
