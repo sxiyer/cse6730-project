@@ -1,7 +1,7 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 
-from models import Card 
+from  ..models import Card 
 from ..config import PAYOFF
 from ..agents import Player
 
@@ -10,13 +10,12 @@ class GameResultType(Enum):
     LOSS = "loss"   # here for losers to know they lost
     TIE = "tie"     # tie
 
-
 class Game(ABC):
-    def __init__(self, player1:Player, player2:Player):
+    def __init__(self, player1:Player, player2:Player, tick: int):
         self.result: GameResultType | None = None
-        self.loser: Player | None = None
+        self.loser: Player| None = None
         self.winner: Player | None = None
-        self.tick: int = -1
+        self.tick: int = tick
         self.players: tuple[Player,Player] = (player1, player2)
         self.rounds_played: int = 0
         
@@ -46,6 +45,5 @@ class Game(ABC):
     @property
     def player2(self) -> Player:
         return self.players[1]
+    
         
-
-
