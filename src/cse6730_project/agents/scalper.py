@@ -8,3 +8,9 @@ class Scalper(Agent):
         super().__init__(uid, money)
 
     pass
+
+    def buy_order(self):
+        return None
+
+    def sell_order(self):
+        return None

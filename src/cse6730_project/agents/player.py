@@ -18,3 +18,9 @@ class Player(Agent):
         random.shuffle(cards)
 
         return cards
+
+    def buy_order(self) -> None:
+        return None
+
+    def sell_order(self) -> None:
+        return None
