@@ -15,7 +15,7 @@ def basicSimulation() -> Simulation:
 
 
 class TestSimulation:
-    def test_init(self, basicSimulation) -> None:
+    def test_init(self, basicSimulation: Simulation) -> None:
         """
         A basic simulation initializes with no market and 100 agents
         """
