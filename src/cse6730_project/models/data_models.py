@@ -9,11 +9,6 @@ class Card(Enum):
     SCISSOR = "S"
 
 
-class Cards(Enum):
-    ROCK: float
-    PAPER: float
-    SCISSOR: float
-
 class OrderType(Enum):
     BUY = "buy"
     SELL = "sell"

@@ -1,0 +1,15 @@
+{
+    "pythonVersion": "3.12",
+    "venvPath": ".",
+    "venv": ".venv",
+    "include": [
+        "src"
+    ],
+    "extraPaths": [
+        "./src/cse6730_project/games", 
+        "./src/cse6730_project/market",
+        "./src/cse6730_project/agents",
+        "./src/cse6730_project/models"
+    ]
+   
+}
