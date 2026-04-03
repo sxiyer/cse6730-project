@@ -1,8 +1,8 @@
 import pytest
-from utils import logger
-from simulation import Simulation
-from constants import RNG_SEED
-from agent import Player
+from cse6730_project.utils import logger
+from cse6730_project.simulation import Simulation
+from cse6730_project.config import RNG_SEED
+from cse6730_project.agents import Player
 
 @pytest.fixture
 def basicSimulation():
