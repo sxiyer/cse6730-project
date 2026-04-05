@@ -1,2 +1,2 @@
 from .base import Game, GameResultType
-from .game_onecard import GameOneCard
+from .game_one_card import GameOneCard
