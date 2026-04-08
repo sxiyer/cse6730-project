@@ -154,7 +154,6 @@ cse6730-project/
 │   │   └── test_simulation.cpython-312-pytest-9.0.2.pyc
 │   └── test_simulation.py
 └── uv.lock
-
 ```
 
 <div align="center">
