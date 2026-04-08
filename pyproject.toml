@@ -28,5 +28,6 @@ pythonpath = ["src"]
 
 [dependency-groups]
 dev = [
+    "directory-tree>=1.0.0",
     "pytest>=9.0.2",
 ]

@@ -1,5 +1,5 @@
 | Rock x Paper x Scissors - Agent-Based Market Simulation |
-|:----:| 
+|:----:|
 | ![UI](figures/output.gif) |
 
 # CSE6730 Final Project
@@ -30,9 +30,9 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 
 1. Each player starts with a deck of 9 cards, consisting of randomly generated combinations of rock, paper, and scissors. There will be a even number of players.
 
-2. Each round, two players are randomly selected to play against each other. 
+2. Each round, two players are randomly selected to play against each other.
 
-3. Each player will randomly shuffle their deck and select the top card to play against their opponent. A card can't be reused in the same round, but it can be used in future rounds. 
+3. Each player will randomly shuffle their deck and select the top card to play against their opponent. A card can't be reused in the same round, but it can be used in future rounds.
 
 4. The first player to win 3 rounds wins the game. The winner of each round receives one point.
 
@@ -49,7 +49,7 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 3. Run the following command from the project's root dir to install the required dependencies:
 
 ```bash
-pip install . 
+pip install .
 ```
 
 --- ;
@@ -78,37 +78,83 @@ Results are saved to `results/` after the session ends.
 ### Project Structure
 
 ```txt
-cse6730-PROJECT/
-|-- results/              
-|-- figures/
-|-- |-- output.gif
-|-- scripts/         
-|-- |-- run.sh
-|-- src/cse6730_project/
-|-- |-- agents.py          
-|-- |-- main.py             
-|-- |-- market.py          
-|-- |-- reporting.py       
-|-- |-- simulator.py        
-|-- |-- visualization.py   
-|-- |-- games/
-|-- |-- |-- __init__.py
-|-- |-- |-- game_skeleton.py
-|-- |-- |-- markets/
-|-- |-- |-- __init__.py
-|-- |-- |-- |-- market_skeleton.py
-|-- |-- |-- agents/
-|-- |-- |-- __init__.py
-|-- |-- |-- |-- player_skeleton.py
-|-- |-- ui/
-|-- |-- |-- __init__.py
-|-- |-- |-- app.py
-|-- |-- |-- states.py
-|-- |-- |-- layouts.py
-|-- pyproject.toml          
-|-- tests/test_simulator.py 
-|-- README.md
-|-- uv.lock                 
+cse6730-project/
+├── figures/
+│   ├── output.gif
+│   └── ui.mov
+├── INSTRUCTIONS.md
+├── pyproject.toml
+├── pyrightconfig.json
+├── README.md
+├── scripts/
+│   ├── genWorkTree.sh
+│   └── run.sh
+├── src/
+│   └── cse6730_project/
+│       ├── __init__.py
+│       ├── __pycache__/
+│       │   ├── __init__.cpython-312.pyc
+│       │   ├── config.cpython-312.pyc
+│       │   ├── reporting.cpython-312.pyc
+│       │   └── utils.cpython-312.pyc
+│       ├── agents/
+│       │   ├── __init__.py
+│       │   ├── __pycache__/
+│       │   │   ├── __init__.cpython-312.pyc
+│       │   │   ├── base.cpython-312.pyc
+│       │   │   ├── player.cpython-312.pyc
+│       │   │   ├── player_onecard.cpython-312.pyc
+│       │   │   └── scalper.cpython-312.pyc
+│       │   ├── base.py
+│       │   ├── player.py
+│       │   ├── player_onecard.py
+│       │   └── scalper.py
+│       ├── config.py
+│       ├── games/
+│       │   ├── __init__.py
+│       │   ├── __pycache__/
+│       │   │   ├── __init__.cpython-312.pyc
+│       │   │   ├── base.cpython-312.pyc
+│       │   │   ├── game_one_card.cpython-312.pyc
+│       │   │   └── game_onecard.cpython-312.pyc
+│       │   ├── base.py
+│       │   └── game_one_card.py
+│       ├── main.py
+│       ├── market/
+│       │   ├── __init__.py
+│       │   ├── __pycache__/
+│       │   │   ├── __init__.cpython-312.pyc
+│       │   │   └── base.cpython-312.pyc
+│       │   ├── base.py
+│       │   ├── market_common.py
+│       │   └── market_simple.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   ├── __pycache__/
+│       │   │   ├── __init__.cpython-312.pyc
+│       │   │   └── data_models.cpython-312.pyc
+│       │   └── data_models.py
+│       ├── reporting.py
+│       ├── simulation/
+│       │   ├── __init__.py
+│       │   ├── __pycache__/
+│       │   │   ├── __init__.cpython-312.pyc
+│       │   │   └── simulation.cpython-312.pyc
+│       │   └── simulation.py
+│       ├── ui/
+│       │   ├── __init__.py
+│       │   ├── app.py
+│       │   ├── layouts.py
+│       │   └── states.py
+│       ├── utils.py
+│       └── visualization.py
+├── temp
+├── tests/
+│   ├── __pycache__/
+│   │   └── test_simulation.cpython-312-pytest-9.0.2.pyc
+│   └── test_simulation.py
+└── uv.lock
+
 ```
 
 <div align="center">
