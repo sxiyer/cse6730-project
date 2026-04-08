@@ -92,19 +92,8 @@ cse6730-project/
 ├── src/
 │   └── cse6730_project/
 │       ├── __init__.py
-│       ├── __pycache__/
-│       │   ├── __init__.cpython-312.pyc
-│       │   ├── config.cpython-312.pyc
-│       │   ├── reporting.cpython-312.pyc
-│       │   └── utils.cpython-312.pyc
 │       ├── agents/
 │       │   ├── __init__.py
-│       │   ├── __pycache__/
-│       │   │   ├── __init__.cpython-312.pyc
-│       │   │   ├── base.cpython-312.pyc
-│       │   │   ├── player.cpython-312.pyc
-│       │   │   ├── player_onecard.cpython-312.pyc
-│       │   │   └── scalper.cpython-312.pyc
 │       │   ├── base.py
 │       │   ├── player.py
 │       │   ├── player_onecard.py
@@ -112,34 +101,20 @@ cse6730-project/
 │       ├── config.py
 │       ├── games/
 │       │   ├── __init__.py
-│       │   ├── __pycache__/
-│       │   │   ├── __init__.cpython-312.pyc
-│       │   │   ├── base.cpython-312.pyc
-│       │   │   ├── game_one_card.cpython-312.pyc
-│       │   │   └── game_onecard.cpython-312.pyc
 │       │   ├── base.py
 │       │   └── game_one_card.py
 │       ├── main.py
 │       ├── market/
 │       │   ├── __init__.py
-│       │   ├── __pycache__/
-│       │   │   ├── __init__.cpython-312.pyc
-│       │   │   └── base.cpython-312.pyc
 │       │   ├── base.py
 │       │   ├── market_common.py
 │       │   └── market_simple.py
 │       ├── models/
 │       │   ├── __init__.py
-│       │   ├── __pycache__/
-│       │   │   ├── __init__.cpython-312.pyc
-│       │   │   └── data_models.cpython-312.pyc
 │       │   └── data_models.py
 │       ├── reporting.py
 │       ├── simulation/
 │       │   ├── __init__.py
-│       │   ├── __pycache__/
-│       │   │   ├── __init__.cpython-312.pyc
-│       │   │   └── simulation.cpython-312.pyc
 │       │   └── simulation.py
 │       ├── ui/
 │       │   ├── __init__.py
@@ -150,8 +125,6 @@ cse6730-project/
 │       └── visualization.py
 ├── temp
 ├── tests/
-│   ├── __pycache__/
-│   │   └── test_simulation.cpython-312-pytest-9.0.2.pyc
 │   └── test_simulation.py
 └── uv.lock
 ```
