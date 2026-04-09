@@ -18,7 +18,7 @@ class SimulationApp:
         self.console = Console()
         self.layout = self.state.render(Layout(), self.context)
 
-    def run(self):
+    def run(self) -> None:
         """Run the simulation app."""
         with Live(
             self.layout,

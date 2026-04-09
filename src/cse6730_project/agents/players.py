@@ -1,4 +1,4 @@
-from .agent_skeloton import Agent
+from .agent_skeleton import Agent
 
 
 class Player(Agent):

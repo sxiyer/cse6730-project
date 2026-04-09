@@ -1,6 +1,7 @@
-import os
 from pathlib import Path
+import os
 
+from .models import Card
 
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
@@ -10,7 +11,7 @@ BEST_OF = 5
 WINS_NEEDED = 3
 PRICE_HISTORY_LEN = 5
 
-ROOT = Path(__file__).parent
+ROOT: Path = Path(__file__).parent
 
 # Rich variables
 COLUMNS = 10
@@ -18,3 +19,14 @@ LINES = 10
 
 os.environ["COLUMNS"] = str(COLUMNS)
 os.environ["LINES"] = str(LINES)
+
+RNG_SEED = 420 
+
+PLAYER_STARTING_MONEY = 0.0
+SCALPER_STARTING_MONEY = 0.0
+
+PAYOFF : dict[tuple[Card, Card], int] = {
+    (Card.ROCK, Card.SCISSOR) : 1,
+    (Card.SCISSOR, Card.PAPER) : 1,
+    (Card.PAPER, Card.ROCK) : 1
+}

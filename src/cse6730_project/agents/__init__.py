@@ -1,1 +1,3 @@
-from .players import Player
+from .player import Player
+from .scalper import Scalper
+from .base import Agent
