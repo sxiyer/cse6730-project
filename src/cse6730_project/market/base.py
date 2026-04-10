@@ -28,6 +28,14 @@ class Market(ABC):
     def submit_order(self, order: Order) -> bool:
         pass
 
+    @property
+    def get_prices(self) -> dict:
+        return self.prices
+
+    @property
+    def get_stock(self) -> dict:
+        return self.stock
+
     @abstractmethod
     def clear(self) -> None:
         pass
