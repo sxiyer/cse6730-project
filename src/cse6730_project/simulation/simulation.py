@@ -149,6 +149,13 @@ class Simulation:
         if self.market:
             self.market.clear()
 
+    def __getitem__(self):
+        pass
+
+    @property
+    def get_player(self, id: UUID) -> Agent | None:
+        return self.players[int(id)]
+
     def recordState(self) -> dict:
         """
         game_history: {player_x: [wins, losses]}
