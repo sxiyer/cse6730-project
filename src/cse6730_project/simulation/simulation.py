@@ -74,7 +74,7 @@ class Simulation:
         counter: int = 0
         for player, population in player_type.items():
             ratio = self.num_players * (population // denominator)
-            for i in range(ratio):
+            for _ in range(ratio):
                 p: Player = player(uid=UUID(int=(counter)), money=PLAYER_STARTING_MONEY)
                 counter += 1
                 self.players.append(p)
@@ -83,7 +83,7 @@ class Simulation:
         counter = 0
         for scalper, population in scalper_type.items():
             ratio = self.num_players * (population // denominator)
-            for i in range(ratio):
+            for _ in range(ratio):
                 s: Scalper = scalper(
                     uid=UUID(int=counter), money=SCALPER_STARTING_MONEY
                 )
