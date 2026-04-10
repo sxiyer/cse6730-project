@@ -27,8 +27,8 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: type[Player] = PlayerOneCard,
-        scalper_type: type[Scalper] = Scalper,
+        player_type: dict[type[Player], int] = {PlayerOneCard: 1},
+        scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
         Initializes a simulation.
@@ -60,8 +60,8 @@ class Simulation:
         self.history = None
         self.matches = []
         self.game_type = game_type
-        self.player_type: type[Player] = player_type
-        self.scalper_type: type[Scalper] = scalper_type
+        self.player_type: dict[type[Player], float] = player_type
+        self.scalper_type: dict[type[Scalper], float] = scalper_type
         self.games = []
         self.rng_np = np.random.default_rng(seed=seed)
 
@@ -70,15 +70,25 @@ class Simulation:
 
         # Initialize some basic players according to specified player_type
 
-        for i in range(num_players):
-            p: Player = self.player_type(uid=UUID(int=i), money=PLAYER_STARTING_MONEY)
-            self.players.append(p)
+        denominator: int = sum(player_type.values())
+        counter: int = 0
+        for player, population in player_type.items():
+            ratio = self.num_players * (population // denominator)
+            for i in range(ratio):
+                p: Player = player(uid=UUID(int=(counter)), money=PLAYER_STARTING_MONEY)
+                counter += 1
+                self.players.append(p)
 
-        for i in range(num_scalpers):
-            s: Scalper = self.scalper_type(
-                uid=UUID(int=i), money=SCALPER_STARTING_MONEY
-            )
-            self.scalpers.append(s)
+        denominator = sum(scalper_type.values())
+        counter = 0
+        for scalper, population in scalper_type.items():
+            ratio = self.num_players * (population // denominator)
+            for i in range(ratio):
+                s: Scalper = scalper(
+                    uid=UUID(int=counter), money=SCALPER_STARTING_MONEY
+                )
+                counter += 1
+                self.scalpers.append(s)
 
     def step(self):
         self.matchPlayers()  # Matchmaker to create pairs of players
