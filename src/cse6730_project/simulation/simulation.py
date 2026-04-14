@@ -27,8 +27,8 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: type[Player] = PlayerOneCard,
-        scalper_type: type[Scalper] = Scalper,
+        player_type: dict[type[Player], int] = {PlayerOneCard: 1},
+        scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
         Initializes a simulation.
@@ -57,11 +57,11 @@ class Simulation:
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
         self.current_tick: int = 0
-        self.history = None
+        self.history: dict[int, dict] = {}
         self.matches = []
         self.game_type = game_type
-        self.player_type: type[Player] = player_type
-        self.scalper_type: type[Scalper] = scalper_type
+        self.player_type: dict[type[Player], int] = player_type
+        self.scalper_type: dict[type[Scalper], int] = scalper_type
         self.games = []
         self.rng_np = np.random.default_rng(seed=seed)
 
@@ -70,21 +70,31 @@ class Simulation:
 
         # Initialize some basic players according to specified player_type
 
-        for i in range(num_players):
-            p: Player = self.player_type(uid=UUID(int=i), money=PLAYER_STARTING_MONEY)
-            self.players.append(p)
+        denominator: int = sum(player_type.values())
+        counter: int = 0
+        for player, population in player_type.items():
+            ratio = self.num_players * (population // denominator)
+            for _ in range(ratio):
+                p: Player = player(uid=UUID(int=(counter)), money=PLAYER_STARTING_MONEY)
+                counter += 1
+                self.players.append(p)
 
-        for i in range(num_scalpers):
-            s: Scalper = self.scalper_type(
-                uid=UUID(int=i), money=SCALPER_STARTING_MONEY
-            )
-            self.scalpers.append(s)
+        denominator = sum(scalper_type.values())
+        counter = 0
+        for scalper, population in scalper_type.items():
+            ratio = self.num_players * (population // denominator)
+            for _ in range(ratio):
+                s: Scalper = scalper(
+                    uid=UUID(int=counter), money=SCALPER_STARTING_MONEY
+                )
+                counter += 1
+                self.scalpers.append(s)
 
     def step(self):
         self.matchPlayers()  # Matchmaker to create pairs of players
         self.buildGames()  # Setup games between players
         self.playGames()  # All games play
-        self.playersUpdate()  # Players review outcomes, submit orders (or not)
+        self.agentUpdate()  # Players review outcomes, submit orders (or not)
         self.marketClears()  # Market processes orders
         self.recordState()  # Record meaningful info from this tick
 
@@ -129,19 +139,40 @@ class Simulation:
             else:
                 logger.debug(f"Game {game} complete! Result: TIE")
 
-    def playersUpdate(self) -> None:
-        # TODO: Tell the players to place orders based on the outcomes of the games
-        pass
+    def agentUpdate(self) -> None:
+        for player in self.players:
+            player.wake_up_agent()
+        for scalper in self.scalpers:
+            scalper.wake_up_agent()
 
     def marketClears(self) -> None:
-        # TODO: Market processes orders
+        if self.market:
+            self.market.clear()
+
+    def __getitem__(self):
         pass
 
-    def recordState(self) -> None:
+    def get_player(self, id: UUID) -> Agent | None:
+        return self.players[int(id)]
+
+    def recordState(self) -> dict:
+        """
+        game_history: {player_x: [wins, losses]}
+        player_card_history: {player_x: list[Deck]}
+        scalper_card_history: {scalper_x: list[Deck]}
+        cards_values: list[dict[Cards, value]]
+
+        """
+        return self.history
         # TODO: Record the important information from the current tick
+
         pass
+
+    def next_tick(self) -> None:
+        self.step()
+        self.current_tick += 1
 
     def run(self) -> None:
-        for i in range(self.num_ticks):
+        for i in range(self.current_tick, self.num_ticks):
             self.step()
             self.current_tick += 1

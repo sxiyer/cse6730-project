@@ -14,6 +14,10 @@ class Agent(ABC):
         self.history: list = []
 
     @abstractmethod
+    def wake_up_agent(self) -> None:
+        pass
+
+    @abstractmethod
     def buy_order(self) -> Order | None:
         pass
 
