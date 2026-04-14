@@ -152,7 +152,6 @@ class Simulation:
     def __getitem__(self):
         pass
 
-    @property
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
 
