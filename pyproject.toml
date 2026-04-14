@@ -32,3 +32,6 @@ dev = [
     "directory-tree>=1.0.0",
     "pytest>=9.0.2",
 ]
+
+[tool.uv]
+package = false
