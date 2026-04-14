@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
@@ -9,6 +10,8 @@ from cse6730_project.agents import Player
 
 @pytest.fixture
 def basicSimulation() -> Simulation:
+    # Generate a distribution of players and scalpers
+
     return Simulation(
         market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=2
     )

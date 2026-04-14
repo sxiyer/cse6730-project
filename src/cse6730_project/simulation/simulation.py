@@ -21,6 +21,7 @@ class Simulation:
 
     def __init__(
         self,
+        *,
         market: Market | None = None,
         seed: int | None = RNG_SEED,
         num_players: int = 2,
@@ -90,14 +91,6 @@ class Simulation:
                 counter += 1
                 self.scalpers.append(s)
 
-    def step(self):
-        self.matchPlayers()  # Matchmaker to create pairs of players
-        self.buildGames()  # Setup games between players
-        self.playGames()  # All games play
-        self.agentUpdate()  # Players review outcomes, submit orders (or not)
-        self.marketClears()  # Market processes orders
-        self.recordState()  # Record meaningful info from this tick
-
     def matchPlayers(self) -> None:
         playersLower = self.players[0 : self.num_players // 2]
         playersUpper = self.players[self.num_players // 2 :]
@@ -163,14 +156,20 @@ class Simulation:
         cards_values: list[dict[Cards, value]]
 
         """
-        return self.history
         # TODO: Record the important information from the current tick
-
-        pass
+        return self.history
 
     def next_tick(self) -> None:
         self.step()
         self.current_tick += 1
+
+    def step(self):
+        self.matchPlayers()  # Matchmaker to create pairs of players
+        self.buildGames()  # Setup games between players
+        self.playGames()  # All games play
+        self.agentUpdate()  # Players review outcomes, submit orders (or not)
+        self.marketClears()  # Market processes orders
+        self.recordState()  # Record meaningful info from this tick
 
     def run(self) -> None:
         for i in range(self.current_tick, self.num_ticks):
