@@ -1,7 +1,5 @@
 from uuid import UUID
 
-from cse6730_project.models import Order
-
 from .player import Player
 from ..models import Card
 from ..utils import rng_rand

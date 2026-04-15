@@ -23,6 +23,9 @@ class Market(ABC):
         self.name = name
         self.stock = {card: 0 for card in Card}
         self.prices = {card: 0.0 for card in Card}
+        self.buy_list: list[Order] = []
+        self.sell_list: list[Order] = []
+        self.executed_trades: list[Order] = []
 
     @abstractmethod
     def submit_order(self, order: Order) -> bool:
