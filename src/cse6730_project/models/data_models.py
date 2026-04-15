@@ -13,10 +13,18 @@ class OrderType(Enum):
     BUY = "buy"
     SELL = "sell"
 
+
 @dataclass
 class Order:
-    agent_UID: UUID 
+    agent_UID: UUID
     order_type: OrderType
     card_type: Card
     limit_price: float
     quantity: int = 1
+
+
+@dataclass
+class CardValues:
+    ROCK: float
+    PAPER: float
+    SCISSOR: float
