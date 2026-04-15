@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from ..models import Order
 from .base import Agent
 
 
@@ -8,10 +9,20 @@ class Scalper(Agent):
         super().__init__(uid, money)
 
     def wake_up_agent(self) -> None:
+<<<<<<< HEAD
+        pass
+=======
+        self.pending_orders = []
+        buy = self.buy_order()
+        sell = self.sell_order()
+        if buy:
+            self.pending_orders.append(buy)
+        if sell:
+            self.pending_orders.append(sell)
+>>>>>>> feat/simulation
+
+    def buy_order(self) -> Order | None:
         pass
 
-    def buy_order(self) -> None:
-        return None
-
-    def sell_order(self) -> None:
-        return None
+    def sell_order(self) -> Order | None:
+        pass 

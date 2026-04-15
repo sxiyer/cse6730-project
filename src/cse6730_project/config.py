@@ -22,8 +22,8 @@ os.environ["LINES"] = str(LINES)
 
 RNG_SEED = 420 
 
-PLAYER_STARTING_MONEY = 0.0
-SCALPER_STARTING_MONEY = 0.0
+PLAYER_STARTING_MONEY = 10.0
+SCALPER_STARTING_MONEY = 10.0
 
 PAYOFF : dict[tuple[Card, Card], int] = {
     (Card.ROCK, Card.SCISSOR) : 1,
