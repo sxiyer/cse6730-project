@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from ..models import Order
 from .base import Agent
 
 
@@ -16,8 +17,8 @@ class Scalper(Agent):
         if sell:
             self.pending_orders.append(sell)
 
-    def buy_order(self) -> None:
-        return None
+    def buy_order(self) -> Order | None:
+        pass
 
-    def sell_order(self) -> None:
-        return None
+    def sell_order(self) -> Order | None:
+        pass 

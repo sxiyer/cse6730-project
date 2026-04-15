@@ -20,9 +20,10 @@ class NaiveGambler(Scalper):
         if sell:
             self.pending_orders.append(sell)
 
-    def buy_order(self) -> Order | None:
+    def buy_order(self) -> Order:
         card = rng_rand.choice(list(Card))
         price = round(rng_rand.uniform(0.5, 2.0), 2)
+        # TODO: What if the market could tell the agent the buy/sell spread?
         return Order(
             agent_UID=self.UID,
             order_type=OrderType.BUY,
@@ -42,3 +43,5 @@ class NaiveGambler(Scalper):
             card_type=card,
             limit_price=price,
         )
+
+    

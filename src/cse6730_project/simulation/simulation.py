@@ -142,9 +142,15 @@ class Simulation:
 
     def agentUpdate(self) -> None:
         '''
-        1. Calls wake_up_agent() on every agent (players + scalpers). Each agen'ts wake_up_agent() runs buy_order() and sell_order() and stores non-None results in self.pending_orders.
-        2. Immediately submits those pending orders to the market and clears the list.
+        1. Calls wake_up_agent() on every agent (players + scalpers). Each
+        agen'ts wake_up_agent() runs buy_order() and sell_order() and stores
+        non-None results in self.pending_orders.  
+        2. Immediately submits those
+        pending orders to the market and clears the list.
         '''
+        # TODO: Before entering the agent wake_up loop, get current card values
+        # from the market and pass them into wake_up_agent() so that it can base
+        # its decisions off the card values
         if self.market is None:
             return
         for agent in self.players + self.scalpers:
@@ -159,8 +165,12 @@ class Simulation:
 
     def marketClears(self) -> None:
         '''
-        1. Calls market.clear(), which matches orders per card type: buys fill if limit_price >= current_price and stock exists; all sells fill unconditionally.
-        2. After clearing, reads market.executed_trades and applies them back to agents — buyers gain a card and pay, sellers lose a card and receive money.
+        1. Calls market.clear(), which matches orders per card type: buys fill
+        if limit_price >= current_price and stock exists; all sells fill
+        unconditionally.  
+        2. After clearing, reads market.executed_trades and
+        applies them back to agents — buyers gain a card and pay, sellers lose a
+        card and receive money.  
         3. Clears executed_trades for the next tick.
         '''
         if self.market is None:

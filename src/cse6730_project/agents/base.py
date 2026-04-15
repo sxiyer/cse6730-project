@@ -16,6 +16,7 @@ class Agent(ABC):
 
     @abstractmethod
     def wake_up_agent(self) -> None:
+        # TODO: Pass in the current values of cards from the market. 
         pass
 
     @abstractmethod
