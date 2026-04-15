@@ -10,7 +10,7 @@
 ![uv](https://img.shields.io/badge/package_manager-uv-DE5FE9?style=flat-square)
 ![GT](https://img.shields.io/badge/Georgia_Tech-CSE6730-B3A369?style=flat-square)
 
---- ;
+--- 
 
 ### Team Members
 
@@ -20,7 +20,7 @@
 | Smaran Iyer | `siyer358@gatech.edu` |
 | Adrian Lozada | `alozada7@gatech.edu` |
 
---- ;
+--- 
 
 ### 📺 Project Description
 
@@ -38,7 +38,7 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 
 5. After each game, players can use their points to buy new cards from a card market. The card market will have a limited number of cards available, and the price of each card will fluctuate based on supply and demand.
 
---- ;
+--- 
 
 ### Setup Instructions:
 
@@ -52,7 +52,7 @@ In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulati
 pip install .
 ```
 
---- ;
+--- 
 
 ### Running the Simulation
 
@@ -73,7 +73,7 @@ pip install .
 
 Results are saved to `results/` after the session ends.
 
---- ;
+--- 
 
 ### Project Structure
 
