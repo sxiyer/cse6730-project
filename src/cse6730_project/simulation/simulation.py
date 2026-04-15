@@ -6,6 +6,7 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger, rng_np
+from ..models import OrderType
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
 from ..agents.player_onecard import PlayerOneCard
@@ -82,7 +83,7 @@ class Simulation:
         denominator = sum(scalper_type.values())
         counter = 0
         for scalper, population in scalper_type.items():
-            ratio = self.num_players * (population // denominator)
+            ratio = self.num_scalpers * population // denominator
             for _ in range(ratio):
                 s: Scalper = scalper(
                     uid=UUID(int=counter), money=SCALPER_STARTING_MONEY
@@ -140,14 +141,47 @@ class Simulation:
                 logger.debug(f"Game {game} complete! Result: TIE")
 
     def agentUpdate(self) -> None:
-        for player in self.players:
-            player.wake_up_agent()
-        for scalper in self.scalpers:
-            scalper.wake_up_agent()
+        '''
+        1. Calls wake_up_agent() on every agent (players + scalpers). Each agen'ts wake_up_agent() runs buy_order() and sell_order() and stores non-None results in self.pending_orders.
+        2. Immediately submits those pending orders to the market and clears the list.
+        '''
+        if self.market is None:
+            return
+        for agent in self.players + self.scalpers:
+            agent.wake_up_agent()
+            for order in agent.pending_orders:
+                accepted = self.market.submit_order(order)
+                logger.debug(
+                    f"Agent {agent.UID} submitted {order.order_type.value} "
+                    f"{order.card_type.value} @ {order.limit_price} → {'accepted' if accepted else 'rejected'}"
+                )
+            agent.pending_orders = []
 
     def marketClears(self) -> None:
-        if self.market:
-            self.market.clear()
+        '''
+        1. Calls market.clear(), which matches orders per card type: buys fill if limit_price >= current_price and stock exists; all sells fill unconditionally.
+        2. After clearing, reads market.executed_trades and applies them back to agents — buyers gain a card and pay, sellers lose a card and receive money.
+        3. Clears executed_trades for the next tick.
+        '''
+        if self.market is None:
+            return
+        self.market.clear()
+        agent_map: dict = {a.UID: a for a in self.players + self.scalpers}
+        for order in self.market.executed_trades:
+            agent = agent_map.get(order.agent_UID)
+            if agent is None:
+                continue
+            if order.order_type == OrderType.BUY:
+                agent.deck[order.card_type] += order.quantity
+                agent.money -= self.market.prices[order.card_type] * order.quantity
+            else:
+                agent.deck[order.card_type] = max(0, agent.deck[order.card_type] - order.quantity)
+                agent.money += self.market.prices[order.card_type] * order.quantity
+            logger.debug(
+                f"Settled {order.order_type.value}: agent {agent.UID} "
+                f"{order.card_type.value} x{order.quantity}, money={agent.money:.2f}"
+            )
+        self.market.executed_trades.clear()
 
     def __getitem__(self):
         pass

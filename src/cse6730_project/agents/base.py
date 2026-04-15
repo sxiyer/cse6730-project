@@ -12,6 +12,7 @@ class Agent(ABC):
         self.money: float = money
         self.deck: dict[Card, int] = {card: 0 for card in Card}
         self.history: list = []
+        self.pending_orders: list[Order] = []
 
     @abstractmethod
     def wake_up_agent(self) -> None:
