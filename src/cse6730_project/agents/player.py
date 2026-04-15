@@ -19,6 +19,9 @@ class Player(Agent):
 
         return cards
 
+    def wake_up_agent(self) -> None:
+        pass
+
     def buy_order(self) -> None:
         return None
 
