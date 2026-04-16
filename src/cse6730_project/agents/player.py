@@ -2,12 +2,13 @@ from uuid import UUID
 import random
 
 from .base import Agent
-from ..models import Card
+from ..models import Card, PlayerBehavior
 
 
 class Player(Agent):
     def __init__(self, uid: UUID, money: float = 0.0):
         super().__init__(uid, money)
+        self.PlayerBehavior : PlayerBehavior = PlayerBehavior.NONE
 
     def shuffleDeck(self) -> list[Card]:
         cards = []

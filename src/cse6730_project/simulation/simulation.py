@@ -6,10 +6,11 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger, rng_np
-from ..models import OrderType
+from ..models import OrderType, AgentType
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
 from ..agents.player_onecard import PlayerOneCard
+
 
 import numpy as np
 
@@ -191,6 +192,25 @@ class Simulation:
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
+    
+    def _get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
+        agents = []
+        card_counts : dict[Card, int] = {card: 0 for card in Card}
+
+        if agent_type == AgentType.ALL:
+            agents = self.scalpers + self.players
+        elif agent_type == AgentType.SCALPER:
+            agents = self.scalpers
+        elif agent_type == AgentType.PLAYER:
+            agents = self.players
+            
+        for agent in agents:
+            deck = agent.deck
+            for card, count in deck.items():
+                card_counts[card] += count
+                
+        return card_counts
+        
 
     def recordState(self) -> dict:
         """

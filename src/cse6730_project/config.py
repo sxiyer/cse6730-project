@@ -30,3 +30,12 @@ PAYOFF : dict[tuple[Card, Card], int] = {
     (Card.SCISSOR, Card.PAPER) : 1,
     (Card.PAPER, Card.ROCK) : 1
 }
+
+
+# Baseline ODE solver default params.
+# Used in ode.py
+
+ODE_PARAMS = {
+    "z" : 1.0,      # copycat rate
+    "mu" : 0.01     # mutation rate
+}

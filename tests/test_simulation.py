@@ -2,6 +2,7 @@ from uuid import UUID
 
 import pytest
 
+from cse6730_project.models import AgentType
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
@@ -37,3 +38,10 @@ class TestSimulation:
         samplePlayer: Player = basicSimulation.players[11]
         logger.info(f"Sample Player: {samplePlayer.UID}")
         logger.info(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
+    
+    def test(self, basicSimulation: Simulation) -> None:
+        cardcounts_players = basicSimulation._get_card_counts(AgentType.PLAYER)
+        logger.debug(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation._get_card_counts(AgentType.SCALPER)
+        logger.debug(f"Cards in posession of scalpers: {cardcounts_scalpers}")
+        
