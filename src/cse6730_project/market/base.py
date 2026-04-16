@@ -12,19 +12,17 @@ class Market(ABC):
         player_info: dict[UUID, Any] | None = None,
         scalper_info: dict[UUID, Any] | None = None,
         game_pairs: list | None = None,
-        sell_list: list | None = None,
-        buy_list: list | None = None,
+        sell_list: list[Order] | None = None,
+        buy_list: list[Order] | None = None,
     ):
         self.player_info = player_info
         self.scalper_info = scalper_info
         self.game_pairs = game_pairs
-        self.sell_list = sell_list
-        self.buy_list = buy_list
         self.name = name
         self.stock = {card: 0 for card in Card}
         self.prices = CardValues(ROCK=0, PAPER=0, SCISSOR=0)
-        self.buy_list: list[Order] = []
-        self.sell_list: list[Order] = []
+        self.buy_list: list[Order] | None = sell_list
+        self.sell_list: list[Order] | None = buy_list
         self.executed_trades: list[Order] = []
 
     @abstractmethod
