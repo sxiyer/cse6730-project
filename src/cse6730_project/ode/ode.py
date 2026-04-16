@@ -4,7 +4,6 @@ import numpy as np
 from config import ODE_PARAMS
 from simulation import Simulation
 
-
 class OdeRPS:
     def __init__(
         self,
