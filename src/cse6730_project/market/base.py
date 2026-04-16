@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Any
 
-from ..models import Order, Card
+from ..models import Order, Card, CardValues
 
 
 class Market(ABC):
@@ -22,7 +22,7 @@ class Market(ABC):
         self.buy_list = buy_list
         self.name = name
         self.stock = {card: 0 for card in Card}
-        self.prices = {card: 0.0 for card in Card}
+        self.prices = CardValues(ROCK=0, PAPER=0, SCISSOR=0)
         self.buy_list: list[Order] = []
         self.sell_list: list[Order] = []
         self.executed_trades: list[Order] = []
@@ -32,7 +32,7 @@ class Market(ABC):
         pass
 
     @property
-    def get_prices(self) -> dict:
+    def get_prices(self) -> CardValues:
         return self.prices
 
     @property
