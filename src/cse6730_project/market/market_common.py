@@ -1,4 +1,4 @@
-from ..models import Card, Order, OrderType
+from ..models import Card, Order, OrderType, Transaction
 from ..market import Market
 
 
@@ -7,7 +7,6 @@ class MarketCommon(Market):
         super().__init__(name="common")
         self.stock = {card: 1000 for card in Card}
         self.prices = {card: 1.0 for card in Card}
-        self.executed_trades: list[Order] = []
 
     def submit_order(self, order: Order) -> bool:
         if order.order_type == OrderType.BUY:

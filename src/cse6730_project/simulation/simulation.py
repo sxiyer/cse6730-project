@@ -54,9 +54,9 @@ class Simulation:
         self.num_ticks: int = num_ticks
         self.num_players: int = num_players
         self.num_scalpers: int = num_scalpers
-        self.players: list[
-            Player
-        ] = []  # TODO: Change to dict for O(1) access by UID? Or numpy array?
+        self.players: list[Player] = (
+            []
+        )  # TODO: Change to dict for O(1) access by UID? Or numpy array?
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
         self.current_tick: int = 0
@@ -153,7 +153,7 @@ class Simulation:
                 accepted = self.market.submit_order(order)
                 logger.debug(
                     f"Agent {agent.UID} submitted {order.order_type.value} "
-                    f"{order.card_type.value} @ {order.limit_price} → {'accepted' if accepted else 'rejected'}"
+                    f"{order.card_type.value} @ {order.limit_price} -> {'accepted' if accepted else 'rejected'}"
                 )
             agent.pending_orders = []
 
@@ -195,7 +195,7 @@ class Simulation:
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
 
-    def get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
+    def _get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
         agents = []
         card_counts: dict[Card, int] = {card: 0 for card in Card}
 

@@ -36,7 +36,7 @@ class Order:
 
 
 @dataclass
-class CardValues:
+class CardPrices:
     ROCK: float
     PAPER: float
     SCISSOR: float
@@ -55,3 +55,9 @@ class OdeConfig:
     mu: float
     t_interval: TimeConfig
     t_eval: TimeConfig
+
+
+@dataclass
+class Transaction:
+    agent_UID: UUID
+    successful: bool
