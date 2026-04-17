@@ -185,9 +185,8 @@ class Simulation:
         3. Clears executed_trades for the next tick.
         """
         # TODO Implement order execution logic
-
-    def __getitem__(self):
-        pass
+        if self.market is None:
+            return
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]

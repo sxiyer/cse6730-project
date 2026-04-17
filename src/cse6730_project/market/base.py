@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
-from typing import Any
 
 from ..models import Order, Card, CardPrices, Transaction
 
@@ -20,20 +18,19 @@ class Market(ABC):
         self.executed_trades: list[Transaction] = []
 
     @abstractmethod
-    def submit_order(self, order: Order) -> bool:
-        pass
-
-    def get_prices(self) -> CardPrices:
-        return self.prices
-
-    @property
-    def get_stock(self) -> dict:
-        return self.stock
-
-    @abstractmethod
     def clear(self) -> None:
         pass
 
     @abstractmethod
     def shuffleOrder(self) -> None:
         pass
+
+    @abstractmethod
+    def submit_order(self, order: Order) -> bool:
+        pass
+
+    def get_prices(self) -> CardPrices:
+        return self.prices
+
+    def get_stock(self) -> dict:
+        return self.stock
