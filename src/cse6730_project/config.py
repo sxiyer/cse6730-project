@@ -1,7 +1,8 @@
 from pathlib import Path
 import os
 
-from .models import Card
+from .models import Card, OdeConfig, TimeConfig
+
 
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
@@ -20,22 +21,24 @@ LINES = 10
 os.environ["COLUMNS"] = str(COLUMNS)
 os.environ["LINES"] = str(LINES)
 
-RNG_SEED = 420 
+RNG_SEED = 420
 
 PLAYER_STARTING_MONEY = 10.0
 SCALPER_STARTING_MONEY = 10.0
 
-PAYOFF : dict[tuple[Card, Card], int] = {
-    (Card.ROCK, Card.SCISSOR) : 1,
-    (Card.SCISSOR, Card.PAPER) : 1,
-    (Card.PAPER, Card.ROCK) : 1
+PAYOFF: dict[tuple[Card, Card], int] = {
+    (Card.ROCK, Card.SCISSOR): 1,
+    (Card.SCISSOR, Card.PAPER): 1,
+    (Card.PAPER, Card.ROCK): 1,
 }
 
 
 # Baseline ODE solver default params.
 # Used in ode.py
 
-ODE_PARAMS = {
-    "z" : 1.0,      # copycat rate
-    "mu" : 0.01     # mutation rate
-}
+ODE_PARAMS = OdeConfig(
+    z=1.0,
+    mu=0.01,
+    t_interval=TimeConfig(start=0, end=10),
+    t_eval=TimeConfig(start=0, end=10, step=10),
+)
