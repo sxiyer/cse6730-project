@@ -1,3 +1,4 @@
+from typing import Callable
 from uuid import UUID
 
 from ..agents import Agent, Player, Scalper
@@ -6,7 +7,7 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger, rng_np
-from ..models import OrderType, AgentType
+from ..models import OrderType, AgentType, Order
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
 from ..agents.player_onecard import PlayerOneCard
@@ -93,7 +94,9 @@ class Simulation:
                 counter += 1
                 self.scalpers.append(s)
 
-    def matchPlayers(self) -> None:
+    def matchPlayers(
+        self,
+    ) -> None:  # TODO ensure that all players keep a deck size of 9
         playersLower = self.players[0 : self.num_players // 2]
         playersUpper = self.players[self.num_players // 2 :]
 
@@ -142,20 +145,33 @@ class Simulation:
         2. Immediately submits those
         pending orders to the market and clears the list.
         """
-        # TODO: Before entering the agent wake_up loop, get current card values
-        # from the market and pass them into wake_up_agent() so that it can base
-        # its decisions off the card values
         if self.market is None:
             return
+
+        # Call all agents and collect their orders and callbacks in a map for easy access after market clearing
+        callback_map: dict[UUID, Callable] = {}
+        sell_list: list[Order] = []
+        buy_list: list[Order] = []
+        card_prices = self.market.get_prices()
         for agent in self.players + self.scalpers:
-            agent.wake_up_agent()
-            for order in agent.pending_orders:
-                accepted = self.market.submit_order(order)
-                logger.debug(
-                    f"Agent {agent.UID} submitted {order.order_type.value} "
-                    f"{order.card_type.value} @ {order.limit_price} -> {'accepted' if accepted else 'rejected'}"
-                )
-            agent.pending_orders = []
+            orders = agent.wake_up_agent(card_prices)
+            if orders:
+                buy_order, sell_order, call_back = orders
+                callback_map[agent.UID] = call_back
+                logging_message: str = f"Agent {agent.UID} submitted "
+                if buy_order:
+                    buy_list.append(buy_order)
+                    logging_message += f"BUY {buy_order.card_type.value} x{buy_order.quantity} at {buy_order.limit_price:.2f} "
+                if sell_order:
+                    sell_list.append(sell_order)
+                    logging_message += f"SELL {sell_order.card_type.value} x{sell_order.quantity} at {sell_order.limit_price:.2f}"
+                logger.debug(logging_message)
+            else:
+                continue
+
+        # Submit all orders to the market
+        self.market.buy_list = buy_list
+        self.market.sell_list = sell_list
 
     def marketClears(self) -> None:
         """
