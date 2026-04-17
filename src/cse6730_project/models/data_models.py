@@ -41,6 +41,17 @@ class CardPrices:
     PAPER: float
     SCISSOR: float
 
+    def __getitem__(self, card: Card) -> float:
+        match card:
+            case Card.ROCK:
+                return self.ROCK
+            case Card.PAPER:
+                return self.PAPER
+            case Card.SCISSOR:
+                return self.SCISSOR
+            case _:
+                raise KeyError(f"Invalid card type: {card}")
+
 
 @dataclass(frozen=True)
 class TimeConfig:

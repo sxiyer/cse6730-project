@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Callable
-from random import random
 from uuid import UUID
 
 from ..models import Order, Card, OrderType, CardPrices
@@ -15,7 +14,9 @@ class Agent(ABC):
         self.history: list = []
         self.pending_orders: list[Order] = []
 
-    def wake_up_agent(self, card_prices: CardPrices) -> Callable:
+    def wake_up_agent(
+        self, card_prices: CardPrices
+    ) -> tuple[Order | None, Order | None, Callable] | None:
         """The function takes in the current value of all three cards
         and returns a function to allow the simulation to update the
         agent's deck and money"""
@@ -33,7 +34,10 @@ class Agent(ABC):
                     exchanged_prices[sell_order.card_type] * sell_order.quantity
                 )
 
-        return update_agent
+        if self.buy_order and self.sell_order:
+            return (buy_order, sell_order, update_agent)
+        # The agent won't participate
+        return None
 
     @abstractmethod
     def buy_order(self, card_prices: CardPrices) -> Order | None:
