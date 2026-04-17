@@ -197,15 +197,17 @@ class Simulation:
         return self.players[int(id)]
 
     def _get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
-        agents = []
         card_counts: dict[Card, int] = {card: 0 for card in Card}
 
-        if agent_type == AgentType.ALL:
-            agents = self.scalpers + self.players
-        elif agent_type == AgentType.SCALPER:
-            agents = self.scalpers
-        elif agent_type == AgentType.PLAYER:
-            agents = self.players
+        match agent_type:
+            case AgentType.ALL:
+                agents = self.scalpers + self.players
+            case AgentType.SCALPER:
+                agents = self.scalpers
+            case AgentType.PLAYER:
+                agents = self.players
+            case _:
+                agents = []
 
         for agent in agents:
             card_counts |= dict(Counter(agent.deck))
