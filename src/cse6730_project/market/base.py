@@ -18,7 +18,7 @@ class Market(ABC):
         self.executed_trades: list[Transaction] = []
 
     @abstractmethod
-    def clear(self) -> None:
+    def clear(self) -> list[Transaction]:
         pass
 
     @abstractmethod
@@ -34,3 +34,7 @@ class Market(ABC):
 
     def get_stock(self) -> dict:
         return self.stock
+
+    def insert_orders(self, buy_orders: list[Order], sell_orders: list[Order]) -> None:
+        self.buy_list = buy_orders
+        self.sell_list = sell_orders

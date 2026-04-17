@@ -9,7 +9,7 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger
-from ..models import OrderType, AgentType, Order
+from ..models import AgentType, Order, Transaction
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
 from ..agents.player import PlayerOneCard
@@ -171,22 +171,27 @@ class Simulation:
         self.callback_map = callback_map
 
         # Submit all orders to the market
-        self.market.buy_list = buy_list
-        self.market.sell_list = sell_list
+        self.market.insert_orders(buy_list, sell_list)
 
     def marketClears(self) -> None:
         """
-        1. Calls market.clear(), which matches orders per card type: buys fill
-        if limit_price >= current_price and stock exists; all sells fill
-        unconditionally.
+        1. Calls market.clear(), which matches orders per card type
         2. After clearing, reads market.executed_trades and
-        applies them back to agents — buyers gain a card and pay, sellers lose a
-        card and receive money.
-        3. Clears executed_trades for the next tick.
+        applies them back to agents
         """
         # TODO Implement order execution logic
         if self.market is None:
             return
+
+        transactions: list[Transaction] = self.market.clear()
+
+        exchanged_prices = self.market.get_prices()
+
+        # update agents based on executed transactions
+        for transaction in transactions:
+            agent_id = transaction.agent_UID
+            callback = self.callback_map[agent_id]
+            callback(successful=True, exchanged_prices=exchanged_prices)
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
