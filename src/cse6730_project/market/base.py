@@ -29,7 +29,6 @@ class Market(ABC):
     def submit_order(self, order: Order) -> bool:
         pass
 
-    @property
     def get_prices(self) -> CardValues:
         return self.prices
 
@@ -39,14 +38,6 @@ class Market(ABC):
 
     @abstractmethod
     def clear(self) -> None:
-        pass
-
-    @abstractmethod
-    def execute_trade(self) -> None:
-        pass
-
-    @abstractmethod
-    def getBalance(self) -> None:
         pass
 
     @abstractmethod
