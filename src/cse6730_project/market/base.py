@@ -22,10 +22,6 @@ class Market(ABC):
         pass
 
     @abstractmethod
-    def shuffleOrder(self) -> None:
-        pass
-
-    @abstractmethod
     def submit_order(self, order: Order) -> bool:
         pass
 
