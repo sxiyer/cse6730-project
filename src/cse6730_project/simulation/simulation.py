@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import Callable
 from uuid import UUID
 
@@ -207,9 +208,7 @@ class Simulation:
             agents = self.players
 
         for agent in agents:
-            deck = agent.deck
-            for card, count in deck.items():
-                card_counts[card] += count
+            card_counts |= dict(Counter(agent.deck))
 
         return card_counts
 
@@ -228,7 +227,7 @@ class Simulation:
         self.step()
         self.current_tick += 1
 
-    def step(self):
+    def step(self) -> None:
         self.matchPlayers()  # Matchmaker to create pairs of players
         self.buildGames()  # Setup games between players
         self.playGames()  # All games play
