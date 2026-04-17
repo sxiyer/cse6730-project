@@ -11,8 +11,7 @@ from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger
 from ..models import AgentType, Order, Transaction
-from ..games import Game, GameResultType
-from ..games.game_one_card import GameOneCard
+from ..games import Game, GameResultType, GameOneCard
 
 
 class Simulation:
