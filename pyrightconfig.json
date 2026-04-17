@@ -9,7 +9,9 @@
         "./src/cse6730_project/games", 
         "./src/cse6730_project/market",
         "./src/cse6730_project/agents",
-        "./src/cse6730_project/models"
+        "./src/cse6730_project/models",
+        "./src/*",
+        "./src"
     ]
    
 }
