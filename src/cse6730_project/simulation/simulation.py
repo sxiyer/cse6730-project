@@ -10,7 +10,7 @@ from ..utils import logger, rng_np
 from ..models import OrderType, AgentType, Order
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
-from ..agents.player_onecard import PlayerOneCard
+from ..agents.player import PlayerOneCard
 
 
 import numpy as np
@@ -169,6 +169,8 @@ class Simulation:
             else:
                 continue
 
+        self.callback_map = callback_map
+
         # Submit all orders to the market
         self.market.buy_list = buy_list
         self.market.sell_list = sell_list
@@ -183,27 +185,7 @@ class Simulation:
         card and receive money.
         3. Clears executed_trades for the next tick.
         """
-        if self.market is None:
-            return
-        self.market.clear()
-        agent_map: dict = {a.UID: a for a in self.players + self.scalpers}
-        for order in self.market.executed_trades:
-            agent = agent_map.get(order.agent_UID)
-            if agent is None:
-                continue
-            if order.order_type == OrderType.BUY:
-                agent.deck[order.card_type] += order.quantity
-                agent.money -= self.market.prices[order.card_type] * order.quantity
-            else:
-                agent.deck[order.card_type] = max(
-                    0, agent.deck[order.card_type] - order.quantity
-                )
-                agent.money += self.market.prices[order.card_type] * order.quantity
-            logger.debug(
-                f"Settled {order.order_type.value}: agent {agent.UID} "
-                f"{order.card_type.value} x{order.quantity}, money={agent.money:.2f}"
-            )
-        self.market.executed_trades.clear()
+        # TODO Implement order execution logic
 
     def __getitem__(self):
         pass
