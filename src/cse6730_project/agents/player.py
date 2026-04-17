@@ -1,14 +1,15 @@
 from uuid import UUID
+from ..utils import rng_rand
 import random
 
 from .base import Agent
-from ..models import Card, PlayerBehavior
+from ..models import Card, PlayerBehavior, CardPrices, Order
 
 
 class Player(Agent):
     def __init__(self, uid: UUID, money: float = 0.0):
         super().__init__(uid, money)
-        self.PlayerBehavior : PlayerBehavior = PlayerBehavior.NONE
+        self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
 
     def shuffleDeck(self) -> list[Card]:
         cards = []
@@ -20,17 +21,15 @@ class Player(Agent):
 
         return cards
 
-    def wake_up_agent(self) -> None:
-        self.pending_orders = []
-        buy = self.buy_order()
-        sell = self.sell_order()
-        if buy:
-            self.pending_orders.append(buy)
-        if sell:
-            self.pending_orders.append(sell)
-
-    def buy_order(self) -> None:
+    def buy_order(self, card_prices: CardPrices) -> Order | None:
         return None
 
-    def sell_order(self) -> None:
+    def sell_order(self, card_prices: CardPrices) -> Order | None:
         return None
+
+
+class PlayerOneCard(Player):
+    def __init__(self, uid: UUID, money: float = 0.0):
+        super().__init__(uid, money)
+        card: Card = rng_rand.choice(list(Card))
+        self.deck[card] += 1
