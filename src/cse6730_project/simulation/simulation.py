@@ -179,7 +179,6 @@ class Simulation:
         2. After clearing, reads market.executed_trades and
         applies them back to agents
         """
-        # TODO Implement order execution logic
         if self.market is None:
             return
 
