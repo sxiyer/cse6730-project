@@ -8,19 +8,23 @@ class Card(Enum):
     PAPER = "P"
     SCISSOR = "S"
 
+
 class OrderType(Enum):
     BUY = "buy"
     SELL = "sell"
+
 
 class AgentType(Enum):
     ALL = "all"
     PLAYER = "player"
     SCALPER = "scalper"
 
+
 class PlayerBehavior(Enum):
-    NONE = None # No special behaviors
+    NONE = None  # No special behaviors
     COPYCAT = "copycat"
     MUTATOR = "mutator"
+
 
 @dataclass
 class Order:
@@ -36,3 +40,18 @@ class CardValues:
     ROCK: float
     PAPER: float
     SCISSOR: float
+
+
+@dataclass(frozen=True)
+class TimeConfig:
+    start: int
+    end: int
+    step: int = 0
+
+
+@dataclass(frozen=True)
+class OdeConfig:
+    z: float
+    mu: float
+    t_interval: TimeConfig
+    t_eval: TimeConfig

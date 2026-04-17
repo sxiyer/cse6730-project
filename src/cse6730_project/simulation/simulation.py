@@ -54,9 +54,9 @@ class Simulation:
         self.num_ticks: int = num_ticks
         self.num_players: int = num_players
         self.num_scalpers: int = num_scalpers
-        self.players: list[Player] = (
-            []
-        )  # TODO: Change to dict for O(1) access by UID? Or numpy array?
+        self.players: list[
+            Player
+        ] = []  # TODO: Change to dict for O(1) access by UID? Or numpy array?
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
         self.current_tick: int = 0
@@ -135,13 +135,13 @@ class Simulation:
                 logger.debug(f"Game {game} complete! Result: TIE")
 
     def agentUpdate(self) -> None:
-        '''
+        """
         1. Calls wake_up_agent() on every agent (players + scalpers). Each
         agen'ts wake_up_agent() runs buy_order() and sell_order() and stores
-        non-None results in self.pending_orders.  
+        non-None results in self.pending_orders.
         2. Immediately submits those
         pending orders to the market and clears the list.
-        '''
+        """
         # TODO: Before entering the agent wake_up loop, get current card values
         # from the market and pass them into wake_up_agent() so that it can base
         # its decisions off the card values
@@ -158,15 +158,15 @@ class Simulation:
             agent.pending_orders = []
 
     def marketClears(self) -> None:
-        '''
+        """
         1. Calls market.clear(), which matches orders per card type: buys fill
         if limit_price >= current_price and stock exists; all sells fill
-        unconditionally.  
+        unconditionally.
         2. After clearing, reads market.executed_trades and
         applies them back to agents — buyers gain a card and pay, sellers lose a
-        card and receive money.  
+        card and receive money.
         3. Clears executed_trades for the next tick.
-        '''
+        """
         if self.market is None:
             return
         self.market.clear()
@@ -179,7 +179,9 @@ class Simulation:
                 agent.deck[order.card_type] += order.quantity
                 agent.money -= self.market.prices[order.card_type] * order.quantity
             else:
-                agent.deck[order.card_type] = max(0, agent.deck[order.card_type] - order.quantity)
+                agent.deck[order.card_type] = max(
+                    0, agent.deck[order.card_type] - order.quantity
+                )
                 agent.money += self.market.prices[order.card_type] * order.quantity
             logger.debug(
                 f"Settled {order.order_type.value}: agent {agent.UID} "
@@ -192,10 +194,10 @@ class Simulation:
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
-    
-    def _get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
+
+    def get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
         agents = []
-        card_counts : dict[Card, int] = {card: 0 for card in Card}
+        card_counts: dict[Card, int] = {card: 0 for card in Card}
 
         if agent_type == AgentType.ALL:
             agents = self.scalpers + self.players
@@ -203,14 +205,13 @@ class Simulation:
             agents = self.scalpers
         elif agent_type == AgentType.PLAYER:
             agents = self.players
-            
+
         for agent in agents:
             deck = agent.deck
             for card, count in deck.items():
                 card_counts[card] += count
-                
+
         return card_counts
-        
 
     def recordState(self) -> dict:
         """

@@ -7,6 +7,7 @@ from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
 from cse6730_project.agents import Player
+from cse6730_project.ode.ode import OdeRPS
 
 
 @pytest.fixture
@@ -15,6 +16,16 @@ def basicSimulation() -> Simulation:
 
     return Simulation(
         market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=2
+    )
+
+
+@pytest.fixture
+def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
+
+    return OdeRPS(
+        t_interval=(0, 100),
+        t_eval=[0, 100, 10],
+        initial_counts=basicSimulation.get_card_counts(agent_type=AgentType.PLAYER),
     )
 
 
@@ -38,10 +49,14 @@ class TestSimulation:
         samplePlayer: Player = basicSimulation.players[11]
         logger.info(f"Sample Player: {samplePlayer.UID}")
         logger.info(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
-    
-    def test(self, basicSimulation: Simulation) -> None:
-        cardcounts_players = basicSimulation._get_card_counts(AgentType.PLAYER)
+
+    def test_cardcounts(self, basicSimulation: Simulation) -> None:
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
         logger.debug(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation._get_card_counts(AgentType.SCALPER)
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
         logger.debug(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-        
+
+    def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
+        odeSol = basicODERPS.SolveODE()
+        logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
+        logger.debug(f"{odeSol.y}")
