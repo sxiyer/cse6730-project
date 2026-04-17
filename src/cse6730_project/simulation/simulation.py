@@ -1,6 +1,8 @@
 from typing import Callable
 from uuid import UUID
 
+import numpy as np
+
 from ..agents import Agent, Player, Scalper
 from ..market import Market
 from ..config import *
@@ -11,9 +13,6 @@ from ..models import OrderType, AgentType, Order
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
 from ..agents.player import PlayerOneCard
-
-
-import numpy as np
 
 
 class Simulation:
