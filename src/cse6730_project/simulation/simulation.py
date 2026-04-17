@@ -6,7 +6,7 @@ from ..market import Market
 from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
-from ..utils import logger, rng_np
+from ..utils import logger
 from ..models import OrderType, AgentType, Order
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
