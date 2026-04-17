@@ -48,13 +48,6 @@ class MarketCommon(Market):
         # current values of cards. The market should match bids to asks
         return []  # TODO Implement order execution logic
 
-    def shuffleOrder(self) -> None:
-        import random
-
-        if self.buy_list:
-            random.shuffle(self.buy_list)
-        if self.sell_list:
-            random.shuffle(self.sell_list)
 
 
 class MarketSimple(Market):

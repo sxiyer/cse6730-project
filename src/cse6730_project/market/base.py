@@ -41,3 +41,11 @@ class Market(ABC):
 
     def getBalance(self) -> dict:
         return {card: self.stock[card] * self.prices[card] for card in Card}
+
+    def shuffleOrder(self) -> None:
+        import random
+
+        if self.buy_list:
+            random.shuffle(self.buy_list)
+        if self.sell_list:
+            random.shuffle(self.sell_list)
