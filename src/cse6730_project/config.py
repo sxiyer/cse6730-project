@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 import os
 
@@ -37,8 +38,20 @@ PAYOFF: dict[tuple[Card, Card], int] = {
 # Used in ode.py
 
 ODE_PARAMS = OdeConfig(
-    z=1.0,
-    mu=0.01,
+    z=1.1,
+    mu=0.02,
     t_interval=TimeConfig(start=0, end=10),
     t_eval=TimeConfig(start=0, end=10, step=10),
 )
+
+
+# Visualization configs
+VIZ_DIRS = ["plots/", "plots/ode"]
+
+
+@dataclass(frozen=True)
+class VizConfig:
+    base_dir: Path = Path("plots")
+    img_format: str = ".png"
+    img_dpi: int = 300
+    show_axes: bool = True

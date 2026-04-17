@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from uuid import UUID
+from pathlib import Path
 
 
 class Card(Enum):
@@ -55,3 +56,8 @@ class OdeConfig:
     mu: float
     t_interval: TimeConfig
     t_eval: TimeConfig
+
+
+@dataclass(frozen=True)
+class VizConfig:
+    base_dir: Path = Path("results/plots")
