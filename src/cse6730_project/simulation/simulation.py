@@ -4,7 +4,7 @@ from uuid import UUID
 
 import numpy as np
 
-from ..agents import Agent, Player, Scalper
+from ..agents import Agent, Player, Scalper, PlayerOneCard
 from ..market import Market
 from ..config import *
 from ..reporting import *
@@ -13,7 +13,6 @@ from ..utils import logger
 from ..models import AgentType, Order, Transaction
 from ..games import Game, GameResultType
 from ..games.game_one_card import GameOneCard
-from ..agents.player import PlayerOneCard
 
 
 class Simulation:
@@ -220,7 +219,6 @@ class Simulation:
         player_card_history: {player_x: list[Deck]}
         scalper_card_history: {scalper_x: list[Deck]}
         cards_values: list[dict[Cards, value]]
-
         """
         # TODO: Record the important information from the current tick
         return self.history
