@@ -46,8 +46,8 @@ class MarketCommon(Market):
 
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
-        return []  # TODO Implement order execution logic
 
+        return []  # TODO Implement order execution logic
 
 
 class MarketSimple(Market):

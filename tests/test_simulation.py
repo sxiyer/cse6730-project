@@ -25,7 +25,7 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
     return OdeRPS(
         t_interval=(0, 100),
         t_eval=[0, 100, 10],
-        initial_counts=basicSimulation.get_card_counts(agent_type=AgentType.PLAYER),
+        initial_counts=basicSimulation._get_card_counts(agent_type=AgentType.PLAYER),
     )
 
 
@@ -51,9 +51,9 @@ class TestSimulation:
         logger.info(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
 
     def test_cardcounts(self, basicSimulation: Simulation) -> None:
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        cardcounts_players = basicSimulation._get_card_counts(AgentType.PLAYER)
         logger.debug(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        cardcounts_scalpers = basicSimulation._get_card_counts(AgentType.SCALPER)
         logger.debug(f"Cards in posession of scalpers: {cardcounts_scalpers}")
 
     def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
