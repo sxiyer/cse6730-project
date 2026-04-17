@@ -38,3 +38,6 @@ class Market(ABC):
     def insert_orders(self, buy_orders: list[Order], sell_orders: list[Order]) -> None:
         self.buy_list = buy_orders
         self.sell_list = sell_orders
+
+    def getBalance(self) -> dict:
+        return {card: self.stock[card] * self.prices[card] for card in Card}

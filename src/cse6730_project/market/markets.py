@@ -1,5 +1,5 @@
 from ..models import Card, Order, OrderType, Transaction
-from ..market import Market
+from . import Market
 
 
 class MarketCommon(Market):
@@ -48,9 +48,6 @@ class MarketCommon(Market):
         # current values of cards. The market should match bids to asks
         return []  # TODO Implement order execution logic
 
-    def getBalance(self) -> dict:
-        return {card: self.stock[card] * self.prices[card] for card in Card}
-
     def shuffleOrder(self) -> None:
         import random
 
@@ -58,3 +55,14 @@ class MarketCommon(Market):
             random.shuffle(self.buy_list)
         if self.sell_list:
             random.shuffle(self.sell_list)
+
+
+class MarketSimple(Market):
+    def __init__(self):
+        super().__init__(name="simple")
+        self.stock = {card: 1000 for card in Card}
+        self.prices = {card: 1.0 for card in Card}
+
+    def submit_order(self, order) -> bool:
+        # Any order is successful
+        return True
