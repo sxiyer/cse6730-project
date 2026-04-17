@@ -25,7 +25,7 @@ class MarketCommon(Market):
                 self.sell_list.append(order)
             return True
 
-    def clear(self) -> None:
+    def clear(self) -> list[Transaction]:
         """
         Process all queued orders per card type.
         - Execute accepted buys: deduct stock, record trade.
@@ -46,37 +46,7 @@ class MarketCommon(Market):
 
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
-
-        for card in Card:
-            if self.buy_list:
-                buys = [o for o in self.buy_list if o.card_type == card]
-            else:
-                buys = []
-            if self.sell_list:
-                sells = [o for o in self.sell_list if o.card_type == card]
-            else:
-                sells = []
-
-            # Price update: simple supply/demand
-            net = len(buys) - len(sells)
-            if net > 0:
-                self.prices[card] = round(self.prices[card] * 1.05, 4)
-            elif net < 0:
-                self.prices[card] = round(self.prices[card] * 0.95, 4)
-
-            for order in buys:
-                if self.stock[card] >= order.quantity:
-                    self.stock[card] -= order.quantity
-                    self.executed_trades.append(order)
-
-            for order in sells:
-                self.stock[card] += order.quantity
-                self.executed_trades.append(order)
-
-        if self.buy_list:
-            self.buy_list.clear()
-        if self.sell_list:
-            self.sell_list.clear()
+        return []  # TODO Implement order execution logic
 
     def getBalance(self) -> dict:
         return {card: self.stock[card] * self.prices[card] for card in Card}
