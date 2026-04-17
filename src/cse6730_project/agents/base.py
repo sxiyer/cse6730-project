@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Callable
 from random import random
 from uuid import UUID
 
-from ..models import Order, Card
+from ..models import Order, Card, OrderType, CardPrices
 
 
 class Agent(ABC):
@@ -14,15 +15,30 @@ class Agent(ABC):
         self.history: list = []
         self.pending_orders: list[Order] = []
 
+    def wake_up_agent(self, card_prices: CardPrices) -> Callable:
+        """The function takes in the current value of all three cards
+        and returns a function to allow the simulation to update the
+        agent's deck and money"""
+
+        buy_order = self.buy_order(card_prices)
+        sell_order = self.sell_order(card_prices)
+
+        def update_agent(successful: bool, exchanged_prices: dict[Card, float]) -> None:
+            if successful and buy_order:
+                self.deck[buy_order.card_type] -= buy_order.quantity
+                self.money -= exchanged_prices[buy_order.card_type] * buy_order.quantity
+            if successful and sell_order:
+                self.deck[sell_order.card_type] += sell_order.quantity
+                self.money += (
+                    exchanged_prices[sell_order.card_type] * sell_order.quantity
+                )
+
+        return update_agent
+
     @abstractmethod
-    def wake_up_agent(self) -> None:
-        # TODO: Pass in the current values of cards from the market. 
+    def buy_order(self, card_prices: CardPrices) -> Order | None:
         pass
 
     @abstractmethod
-    def buy_order(self) -> Order | None:
-        pass
-
-    @abstractmethod
-    def sell_order(self) -> Order | None:
+    def sell_order(self, card_prices: CardPrices) -> Order | None:
         pass
