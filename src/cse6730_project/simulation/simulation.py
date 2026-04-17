@@ -224,10 +224,10 @@ class Simulation:
         return self.history
 
     def next_tick(self) -> None:
-        self.step()
+        self._step()
         self.current_tick += 1
 
-    def step(self) -> None:
+    def _step(self) -> None:
         self.matchPlayers()  # Matchmaker to create pairs of players
         self.buildGames()  # Setup games between players
         self.playGames()  # All games play
@@ -237,5 +237,5 @@ class Simulation:
 
     def run(self) -> None:
         for i in range(self.current_tick, self.num_ticks):
-            self.step()
+            self._step()
             self.current_tick += 1
