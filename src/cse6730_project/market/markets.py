@@ -1,4 +1,4 @@
-from ..models import Card, Order, OrderType, Transaction
+from ..models import Card, CardPrices, Order, OrderType, Transaction
 from . import Market
 
 
@@ -7,6 +7,13 @@ class MarketCommon(Market):
         super().__init__(name="common")
         self.stock = {card: 1000 for card in Card}
         self.prices = {card: 1.0 for card in Card}
+
+    def get_prices(self) -> CardPrices:
+        return CardPrices(
+            ROCK=self.prices[Card.ROCK],
+            PAPER=self.prices[Card.PAPER],
+            SCISSOR=self.prices[Card.SCISSOR],
+        )
 
     def submit_order(self, order: Order) -> bool:
         if order.order_type == OrderType.BUY:
@@ -31,23 +38,41 @@ class MarketCommon(Market):
         - Execute accepted buys: deduct stock, record trade.
         - Execute all sells: add to stock, record trade.
         - Update price based on net demand: +5% if more buys, -5% if more sells.
+        Returns one Transaction per agent (deduped), so callbacks are called once.
         """
-        # TODO: This clearing function does not appear to to call back to the
-        # agents who placed the order, so they actually dont know if they can
-        # increase/decrease their card quantities. Implement callbacks to agents
-        # so that they know if their order went through.
-        # Callback format :
-        # (1,0,-1) corresponds to (+1 rock, paper stays the same, -1 scissors)
+        transactions: list[Transaction] = []
+        seen_agents: set = set()
+        buy_volume: dict[Card, int] = {card: 0 for card in Card}
+        sell_volume: dict[Card, int] = {card: 0 for card in Card}
 
-        # Also: The clearing function needs to ensure that players can always
-        # buy or sell such that they have 9 card decks. There should always be
-        # liquidity in the market. Perhaps the scalpers are forced to always put
-        # up some price for their cards such that it creates liquidity?
+        for order in self.buy_list or []:
+            if (
+                order.limit_price >= self.prices[order.card_type]
+                and self.stock[order.card_type] >= order.quantity
+            ):
+                self.stock[order.card_type] -= order.quantity
+                buy_volume[order.card_type] += order.quantity
+                if order.agent_UID not in seen_agents:
+                    seen_agents.add(order.agent_UID)
+                    transactions.append(Transaction(agent_UID=order.agent_UID, successful=True))
 
-        # Also check if bid/ask prices are actually valid according to the
-        # current values of cards. The market should match bids to asks
+        for order in self.sell_list or []:
+            self.stock[order.card_type] += order.quantity
+            sell_volume[order.card_type] += order.quantity
+            if order.agent_UID not in seen_agents:
+                seen_agents.add(order.agent_UID)
+                transactions.append(Transaction(agent_UID=order.agent_UID, successful=True))
 
-        return []  # TODO Implement order execution logic
+        for card in Card:
+            if buy_volume[card] > sell_volume[card]:
+                self.prices[card] *= 1.05
+            elif sell_volume[card] > buy_volume[card]:
+                self.prices[card] *= 0.95
+
+        self.buy_list = []
+        self.sell_list = []
+
+        return transactions
 
 
 class MarketSimple(Market):

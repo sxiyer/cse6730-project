@@ -44,6 +44,9 @@ class Shadow(Scalper):
 
     def buy_order(self, card_prices: CardPrices) -> Order | None:
         """Buy the card with the strongest positive momentum."""
+        for card in Card:
+            self._price_history[card].append(card_prices[card])
+        self._current_tick += 1
 
         rising = [
             (card, self._momentum(card)) for card in Card if self._momentum(card) > 0

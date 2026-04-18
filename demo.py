@@ -6,7 +6,7 @@ Usage (from repo root):
 """
 
 from src.cse6730_project.simulation import Simulation
-from src.cse6730_project.market.market_common import MarketCommon
+from src.cse6730_project.market.markets import MarketCommon
 from src.cse6730_project.agents import NaiveGambler, Shadow
 from src.cse6730_project.config import RNG_SEED
 from src.cse6730_project.models import Card
@@ -22,16 +22,14 @@ sim = Simulation(
     market=market,
     num_players=NUM_PLAYERS,
     num_scalpers=NUM_SCALPERS,
-    scalper_type={NaiveGambler: 3, Shadow: 1},
+    scalper_type={NaiveGambler: 2, Shadow: 2},
     num_ticks=NUM_TICKS,
     seed=RNG_SEED,
 )
 
-# Give all scalpers a starting budget and inject market into Shadows
+# Give all scalpers a starting budget
 for s in sim.scalpers:
     s.money = SCALPER_BUDGET
-    if isinstance(s, Shadow):
-        s.market = market
 
 scalper_labels = {
     s.UID: f"{'NG' if isinstance(s, NaiveGambler) else 'SH'}-{str(s.UID)[-4:]}"
@@ -43,8 +41,7 @@ print(f"{'Tick':<6} {'R price':>9} {'P price':>9} {'S price':>9} {'R stock':>9} 
 print("-" * 66)
 
 for tick in range(NUM_TICKS):
-    sim.step()
-    sim.current_tick += 1
+    sim.next_tick()
     p = market.prices
     st = market.stock
     print(
