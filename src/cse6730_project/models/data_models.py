@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from uuid import UUID
+from pathlib import Path
 
 
 class Card(Enum):
@@ -72,3 +73,8 @@ class OdeConfig:
 class Transaction:
     agent_UID: UUID
     successful: bool
+
+
+@dataclass(frozen=True)
+class VizConfig:
+    base_dir: Path = Path("results/plots")
