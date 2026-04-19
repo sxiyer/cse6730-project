@@ -39,6 +39,7 @@ class MarketCommon(Market):
         - Execute all sells: add to stock, record trade.
         - Update price based on net demand: +5% if more buys, -5% if more sells.
         Returns one Transaction per agent (deduped), so callbacks are called once.
+        TODO: Check this out, may not be correct
         """
         transactions: list[Transaction] = []
         seen_agents: set = set()
