@@ -10,7 +10,7 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger
-from ..models import AgentType, Order, Transaction
+from ..models import AgentType, Order, Transaction, TickSnapShot
 from ..games import Game, GameResultType, GameOneCard
 
 
@@ -59,7 +59,7 @@ class Simulation:
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
         self.current_tick: int = 0
-        self.history: dict[int, dict] = {}
+        self._history: list = []
         self.matches = []
         self.game_type = game_type
         self.player_type: dict[type[Player], int] = player_type
@@ -82,7 +82,7 @@ class Simulation:
                 self.players.append(p)
 
         denominator = sum(scalper_type.values())
-        counter = 0
+        # counter = 0 Don't resest the counter to have unique player and scalper ids
         for scalper, population in scalper_type.items():
             ratio = self.num_scalpers * population // denominator
             for _ in range(ratio):
@@ -214,7 +214,7 @@ class Simulation:
 
         return card_counts
 
-    def recordState(self) -> dict:
+    def _recordState(self) -> None:
         """
         game_history: {player_x: [wins, losses]}
         player_card_history: {player_x: list[Deck]}
@@ -222,7 +222,20 @@ class Simulation:
         cards_values: list[dict[Cards, value]]
         """
         # TODO: Record the important information from the current tick
-        return self.history
+        if self.market is None:
+            return
+
+        snapshot = TickSnapShot(
+            tick=self.current_tick,
+            card_prices=self.market.get_prices(),
+            order_volume=self.market.get_stock(),
+            top_twenty_players=[],
+            top_twenty_scalper=[],
+        )
+        self._history.append(snapshot)
+
+    def getHistory(self) -> list[TickSnapShot]:
+        return self._history
 
     def next_tick(self) -> None:
         self._step()
@@ -234,7 +247,7 @@ class Simulation:
         self.playGames()  # All games play
         self.agentUpdate()  # Players review outcomes, submit orders (or not)
         self.marketClears()  # Market processes orders
-        self.recordState()  # Record meaningful info from this tick
+        self._recordState()  # Record meaningful info from this tick
 
     def run(self) -> None:
         for i in range(self.current_tick, self.num_ticks):

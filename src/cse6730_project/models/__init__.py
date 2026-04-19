@@ -8,4 +8,5 @@ from .data_models import (
     TimeConfig,
     CardPrices,
     Transaction,
+    TickSnapShot,
 )

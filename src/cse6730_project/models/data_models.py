@@ -78,6 +78,6 @@ class Transaction:
 class TickSnapShot:
     tick: int
     card_prices: CardPrices
-    order_volume: int
-    top_twenty_players: list[UUID]
-    top_twenty_scalper: list[UUID]
+    order_volume: dict
+    top_twenty_players: list[UUID]  # Sorted in decreasing order
+    top_twenty_scalper: list[UUID]  # Sorted in decreasing order
