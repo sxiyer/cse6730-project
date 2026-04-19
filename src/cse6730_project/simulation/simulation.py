@@ -77,7 +77,7 @@ class Simulation:
         for player, population in player_type.items():
             ratio = self.num_players * (population // denominator)
             for _ in range(ratio):
-                p: Player = player(uid=UUID(int=(counter)), money=PLAYER_STARTING_MONEY)
+                p: Player = player(uid=UUID(int=counter), money=PLAYER_STARTING_MONEY)
                 counter += 1
                 self.players.append(p)
 
@@ -94,7 +94,7 @@ class Simulation:
 
     def matchPlayers(
         self,
-    ) -> None:  # TODO ensure that all players keep a deck size of 9
+    ) -> None:
         playersLower = self.players[0 : self.num_players // 2]
         playersUpper = self.players[self.num_players // 2 :]
 
@@ -208,7 +208,9 @@ class Simulation:
                 agents = []
 
         for agent in agents:
-            card_counts |= dict(Counter(agent.deck))
+            temp_count = dict(Counter(agent.deck))
+            for key, value in temp_count.items():
+                card_counts[key] += value
 
         return card_counts
 

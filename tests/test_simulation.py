@@ -1,13 +1,21 @@
 from uuid import UUID
 
+
 import pytest
 
-from cse6730_project.models import AgentType
+from cse6730_project.models import AgentType, Order, OrderType, Card
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
 from cse6730_project.agents import Player
 from cse6730_project.ode.ode import OdeRPS
+from cse6730_project.market import Market, MarketCommon
+
+
+@pytest.fixture
+def basicMarket() -> Market:
+    """Generate a common market"""
+    return MarketCommon()
 
 
 @pytest.fixture
@@ -60,3 +68,34 @@ class TestSimulation:
         odeSol = basicODERPS.SolveODE()
         logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
         logger.debug(f"{odeSol.y}")
+
+    def test_market(self, basicMarket: Market) -> None:
+        # Generate a list of sell and buy orders
+        sell_orders = [
+            Order(
+                agent_UID=UUID(int=i),
+                order_type=OrderType.SELL,
+                card_type=Card.ROCK,
+                limit_price=10,
+            )
+            for i in range(10)
+        ]
+        buy_orders = [
+            Order(
+                agent_UID=UUID(int=i),
+                order_type=OrderType.SELL,
+                card_type=Card.ROCK,
+                limit_price=10,
+            )
+            for i in range(10)
+        ]
+
+        basicMarket.insert_orders(buy_orders=buy_orders, sell_orders=sell_orders)
+
+        assert basicMarket.buy_list is not None
+        assert basicMarket.sell_list is not None
+
+        basicMarket.clear()
+
+        assert basicMarket.buy_list is None
+        assert basicMarket.sell_list is None

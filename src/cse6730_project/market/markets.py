@@ -5,8 +5,6 @@ from . import Market
 class MarketCommon(Market):
     def __init__(self):
         super().__init__(name="common")
-        self.stock = {card: 1000 for card in Card}
-        self.prices = {card: 1.0 for card in Card}
 
     def submit_order(self, order: Order) -> bool:
         if order.order_type == OrderType.BUY:
@@ -46,15 +44,14 @@ class MarketCommon(Market):
 
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
-
+        self.sell_list = None
+        self.buy_list = None
         return []  # TODO Implement order execution logic
 
 
 class MarketSimple(Market):
     def __init__(self):
         super().__init__(name="simple")
-        self.stock = {card: 1000 for card in Card}
-        self.prices = {card: 1.0 for card in Card}
 
     def submit_order(self, order) -> bool:
         # Any order is successful
