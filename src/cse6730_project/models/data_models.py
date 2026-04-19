@@ -81,3 +81,9 @@ class TickSnapShot:
     order_volume: dict
     top_twenty_players: list[UUID]  # Sorted in decreasing order
     top_twenty_scalper: list[UUID]  # Sorted in decreasing order
+
+
+class GameResultType(Enum):
+    WIN = "win"  # somebody won
+    LOSS = "loss"  # here for losers to know they lost
+    TIE = "tie"  # tie

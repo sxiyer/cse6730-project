@@ -9,4 +9,5 @@ from .data_models import (
     CardPrices,
     Transaction,
     TickSnapShot,
+    GameResultType,
 )

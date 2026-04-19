@@ -10,8 +10,8 @@ from ..config import *
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger
-from ..models import AgentType, Order, Transaction, TickSnapShot
-from ..games import Game, GameResultType, GameOneCard
+from ..models import AgentType, Order, Transaction, TickSnapShot, GameResultType
+from ..games import Game, GameOneCard
 
 
 class Simulation:
@@ -58,13 +58,14 @@ class Simulation:
         )  # TODO: Change to dict for O(1) access by UID? Or numpy array?
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
-        self.current_tick: int = 0
+        self._current_tick: int = 0
         self._history: list = []
         self.matches = []
-        self.game_type = game_type
         self.player_type: dict[type[Player], int] = player_type
         self.scalper_type: dict[type[Scalper], int] = scalper_type
         self.games = []
+        self.game_type = game_type
+        self._game_history = []
         self.rng_np = np.random.default_rng(seed=seed)
 
         assert num_players >= 2, "Number of players must be greater than or equal to 2!"
@@ -109,7 +110,7 @@ class Simulation:
 
     def buildGames(self) -> None:
         for match in self.matches:
-            logger.debug(f"Building match at tick {self.current_tick}")
+            logger.debug(f"Building match at tick {self._current_tick}")
 
             player1 = match[0]
             player2 = match[1]
@@ -118,7 +119,7 @@ class Simulation:
                 f"Found player1 (UID: {player1.UID}) and player2 (UID: {player2.UID}), creating game..."
             )
 
-            game = self.game_type(player1, player2, self.current_tick)
+            game = self.game_type(player1, player2, self._current_tick)
 
             logger.debug(f"Game created, adding to games, GAME: {game}")
             self.games.append(game)
@@ -133,6 +134,9 @@ class Simulation:
                     f"Game {game} complete!\nWinner: {winner.UID}\nLoser: {loser.UID}"
                 )
             else:
+                winner = game.winner
+                loser = game.loser
+
                 logger.debug(f"Game {game} complete! Result: TIE")
 
     def agentUpdate(self) -> None:
@@ -226,7 +230,7 @@ class Simulation:
             return
 
         snapshot = TickSnapShot(
-            tick=self.current_tick,
+            tick=self._current_tick,
             card_prices=self.market.get_prices(),
             order_volume=self.market.get_stock(),
             top_twenty_players=[],
@@ -239,7 +243,7 @@ class Simulation:
 
     def next_tick(self) -> None:
         self._step()
-        self.current_tick += 1
+        self._current_tick += 1
 
     def _step(self) -> None:
         self.matchPlayers()  # Matchmaker to create pairs of players
@@ -250,6 +254,6 @@ class Simulation:
         self._recordState()  # Record meaningful info from this tick
 
     def run(self) -> None:
-        for i in range(self.current_tick, self.num_ticks):
+        for i in range(self._current_tick, self.num_ticks):
             self._step()
-            self.current_tick += 1
+            self._current_tick += 1
