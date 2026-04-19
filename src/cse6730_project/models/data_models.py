@@ -72,3 +72,12 @@ class OdeConfig:
 class Transaction:
     agent_UID: UUID
     successful: bool
+
+
+@dataclass
+class TickSnapShot:
+    tick: int
+    card_prices: CardPrices
+    order_volume: int
+    top_twenty_players: list[UUID]
+    top_twenty_scalper: list[UUID]
