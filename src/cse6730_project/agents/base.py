@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Callable
 from uuid import UUID
 
-from ..models import Order, Card, OrderType, CardPrices
+from ..models import Order, Card, CardPrices
 
 
 class Agent(ABC):
@@ -26,10 +26,10 @@ class Agent(ABC):
 
         def update_agent(successful: bool, exchanged_prices: dict[Card, float]) -> None:
             if successful and buy_order:
-                self.deck[buy_order.card_type] -= buy_order.quantity
+                self.deck[buy_order.card_type] += buy_order.quantity
                 self.money -= exchanged_prices[buy_order.card_type] * buy_order.quantity
             if successful and sell_order:
-                self.deck[sell_order.card_type] += sell_order.quantity
+                self.deck[sell_order.card_type] -= sell_order.quantity
                 self.money += (
                     exchanged_prices[sell_order.card_type] * sell_order.quantity
                 )
