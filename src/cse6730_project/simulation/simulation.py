@@ -187,13 +187,15 @@ class Simulation:
 
         transactions: list[Transaction] = self.market.clear()
 
-        exchanged_prices = self.market.get_prices()
-
         # update agents based on executed transactions
         for transaction in transactions:
             agent_id = transaction.agent_UID
             callback = self.callback_map[agent_id]
-            callback(successful=True, exchanged_prices=exchanged_prices)
+
+            callback(
+                successful=transaction.successful,
+                exchanged_prices=transaction.exchange_price,
+            )
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
