@@ -26,7 +26,11 @@ class Market(ABC):
         pass
 
     def get_prices(self) -> CardPrices:
-        return self.prices
+        return CardPrices(
+            ROCK=self.prices[Card.ROCK],
+            PAPER=self.prices[Card.PAPER],
+            SCISSOR=self.prices[Card.PAPER],
+        )
 
     def get_stock(self) -> dict:
         return self.stock
