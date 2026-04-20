@@ -72,6 +72,7 @@ class OdeConfig:
 class Transaction:
     agent_UID: UUID
     successful: bool
+    exchange_price: float
 
 
 @dataclass
