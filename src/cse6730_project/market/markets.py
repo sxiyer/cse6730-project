@@ -44,9 +44,18 @@ class MarketCommon(Market):
 
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
+
+        # TODO Fix transcation logic: it returns none!!
+        transactions: list[Transaction] = []
+        if self.buy_list and self.sell_list:
+            for order in self.buy_list:
+                transactions.append(Transaction(order.agent_UID, False, 0))
+            for order in self.sell_list:
+                transactions.append(Transaction(order.agent_UID, False, 0))
+
         self.sell_list = None
         self.buy_list = None
-        return []  # TODO Implement order execution logic
+        return transactions  # TODO Implement order execution logic
 
 
 class MarketSimple(Market):
