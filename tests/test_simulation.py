@@ -1,11 +1,13 @@
 from uuid import UUID
 
+import random
 import pytest
 
 from cse6730_project.models import AgentType
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
+from cse6730_project.utils import rng_rand
 from cse6730_project.agents import Player
 from cse6730_project.ode.ode import OdeRPS
 from cse6730_project.visualization import ODEVisualizer
@@ -14,7 +16,7 @@ from cse6730_project.visualization import ODEVisualizer
 @pytest.fixture
 def basicSimulation() -> Simulation:
     # Generate a distribution of players and scalpers
-
+    rng_rand.seed(RNG_SEED)
     return Simulation(
         market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=2
     )
@@ -25,7 +27,7 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
 
     return OdeRPS(
         t_interval=(0, 100),
-        t_eval=[0, 100, 100],
+        t_eval=[0, 100, 500],
         initial_counts=basicSimulation.get_card_counts(agent_type=AgentType.PLAYER),
     )
 
@@ -58,6 +60,10 @@ class TestSimulation:
         logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
 
     def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        logger.info(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
         odeSol = basicODERPS.SolveODE()
         logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
         logger.debug(f"{odeSol.y}")

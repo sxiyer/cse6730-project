@@ -208,7 +208,9 @@ class Simulation:
                 agents = []
 
         for agent in agents:
-            card_counts |= dict(Counter(agent.deck))
+            temp_count = dict(Counter(agent.deck))
+            for key, value in temp_count.items():
+                card_counts[key] += value
 
         return card_counts
 

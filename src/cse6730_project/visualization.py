@@ -3,7 +3,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from .config import VIZ_DIRS, VizConfig
+from .utils import logger
+from .config import VIZ_DIRS, VizConfig, ODE_PARAMS
 
 
 class Visualizer:
@@ -28,18 +29,33 @@ class ODEVisualizer(Visualizer):
     ):
         # TODO : Pass sim params into ODEViz so that we can label which line
         # corresponds to R,P,S
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.axhline(y=0, color="black", linestyle="--")
-        ax.axvline(color="grey")
+        fig, ax = plt.subplots(figsize=(5, 3))
 
-        for y in ys:
-            ax.plot(t, y, linewidth=2)
+        for i, y in enumerate(ys):
+            logger.debug(f"y{i} : {y}")
+            ax.plot(t, y, linewidth=1.5)
 
         if simparams is None:
             fname = datetime.now().strftime("%Y%m%d_%H%M%S_%d")
         else:
             fname = "oops"
 
+        title_string = f"mu = {ODE_PARAMS.mu}, z = {ODE_PARAMS.z}"
+
+        ax.legend(
+            [
+                "Rock",
+                "Paper",
+                "Scissors",
+            ],
+            fontsize="large",
+            title=title_string,
+        )
+        ax.axhline(y=0, color="black", linestyle="--")
+        ax.axvline(color="grey")
+        ax.set_xlabel("Steps")
+        ax.set_ylabel("Population Ratio")
+        ax.autoscale()
         ode_fig_dir = self.base_dir / "ode" / f"{fname}{VizConfig.img_format}"
 
         fig.savefig(ode_fig_dir, dpi=self.img_dpi, bbox_inches="tight")

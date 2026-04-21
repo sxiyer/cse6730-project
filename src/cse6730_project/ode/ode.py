@@ -2,8 +2,10 @@ from scipy.integrate import solve_ivp
 from scipy.integrate._ivp.ivp import OdeResult
 import numpy as np
 
+from ..utils import logger
 from ..config import ODE_PARAMS
 from ..models import Card
+
 
 class OdeRPS:
     def __init__(
@@ -54,6 +56,7 @@ class OdeRPS:
         N_rock = card_counts[Card.ROCK]
         N_paper = card_counts[Card.PAPER]
         N_scissors = card_counts[Card.SCISSOR]
+        logger.debug(f"card counts :{[N_rock, N_paper, N_scissors]}")
 
         N_ALL_CARDS = N_rock + N_paper + N_scissors
 
@@ -62,6 +65,7 @@ class OdeRPS:
         self.d_scissors = N_scissors / N_ALL_CARDS
 
         self.initial_pop = [self.d_rock, self.d_paper, self.d_scissors]
+        logger.debug(f"Initial pops {self.initial_pop}")
 
     def diff_eqn_szolnoki(self, t: float, y: np.ndarray):
         """Modified RPS population density system of differential equations from Szolnoki et al (2014)
