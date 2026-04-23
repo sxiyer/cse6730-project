@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pytest
 
-from cse6730_project.agents import Agent, Player, PlayerOneCard, Scalper, NaiveGambler, Shadow
+from cse6730_project.agents import Agent, Player, PlayerOneCard, Scalper, NaiveGambler, Shadow, QuickGrabber
 from cse6730_project.config import RNG_SEED
 from cse6730_project.games import GameOneCard, GameResultType
 from cse6730_project.market.markets import MarketCommon
@@ -794,3 +794,234 @@ class TestODE:
         y = [0.4, 0.35, 0.25]
         dydt = basicODERPS.diff_eqn_szolnoki(0, y)
         assert sum(dydt) == pytest.approx(0.0, abs=1e-12)
+
+
+# ── QuickGrabber ──────────────────────────────────────────────────────────────
+
+@pytest.fixture
+def quick_grabber() -> QuickGrabber:
+    return QuickGrabber(uid=UUID(int=2), money=10.0)
+
+
+class TestQuickGrabberState:
+    def test_initial_price_history_empty(self, quick_grabber):
+        assert all(quick_grabber._price_history[card] == [] for card in Card)
+
+    def test_initial_positions_empty(self, quick_grabber):
+        assert quick_grabber._positions == []
+
+    def test_initial_tick_zero(self, quick_grabber):
+        assert quick_grabber._current_tick == 0
+
+    def test_default_params(self, quick_grabber):
+        assert quick_grabber.momentum_window == 2
+        assert quick_grabber.min_momentum == pytest.approx(0.05)
+        assert quick_grabber.profit_target == pytest.approx(0.04)
+        assert quick_grabber.stop_loss == pytest.approx(0.03)
+        assert quick_grabber.max_hold_ticks == 5
+
+
+class TestQuickGrabberMomentum:
+    def test_insufficient_history_returns_zero(self, quick_grabber):
+        # momentum_window=2 requires at least 3 entries
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.05]
+        assert quick_grabber._momentum(Card.ROCK) == 0.0
+
+    def test_momentum_formula_positive(self, quick_grabber):
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.05, 1.10]
+        # (1.10 - 1.0) / 1.0 = 0.10
+        assert quick_grabber._momentum(Card.ROCK) == pytest.approx(0.10)
+
+    def test_momentum_formula_negative(self, quick_grabber):
+        quick_grabber._price_history[Card.ROCK] = [1.10, 1.05, 1.0]
+        # (1.0 - 1.10) / 1.10 ≈ -0.0909
+        assert quick_grabber._momentum(Card.ROCK) == pytest.approx(-1 / 11, rel=1e-4)
+
+    def test_momentum_flat_is_zero(self, quick_grabber):
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.0, 1.0]
+        assert quick_grabber._momentum(Card.ROCK) == pytest.approx(0.0)
+
+
+class TestQuickGrabberBuyOrder:
+    def _seed_momentum(self, qg: QuickGrabber, card: Card, pct: float = 0.10):
+        """Pre-seed price history so that card shows pct momentum on next buy_order call."""
+        # We need history[-1 - window] to be the base. buy_order appends current price,
+        # so we pre-load window entries and the call adds one more.
+        base = 1.0
+        top = base * (1 + pct)
+        # Pre-load: [base, base*(1+(pct/2))] so after appending top: [base, mid, top]
+        mid = base * (1 + pct / 2)
+        qg._price_history[card] = [base, mid]
+
+    def test_no_buy_when_no_momentum(self, quick_grabber):
+        prices = CardPrices(ROCK=1.0, PAPER=1.0, SCISSOR=1.0)
+        # First call: only 1 entry appended per card, insufficient history → momentum=0
+        assert quick_grabber.buy_order(prices) is None
+
+    def test_no_buy_when_momentum_below_threshold(self, quick_grabber):
+        # Seed 1% momentum (below 5% min_momentum)
+        for card in Card:
+            quick_grabber._price_history[card] = [1.0, 1.005]
+        prices = CardPrices(ROCK=1.01, PAPER=1.01, SCISSOR=1.01)
+        # After appending 1.01: momentum = (1.01 - 1.0) / 1.0 = 0.01 < 0.05
+        assert quick_grabber.buy_order(prices) is None
+
+    def test_buys_highest_momentum_card(self, quick_grabber):
+        # ROCK: 10% momentum; PAPER/SCISSOR: 2% (below threshold)
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.05]
+        quick_grabber._price_history[Card.PAPER] = [1.0, 1.01]
+        quick_grabber._price_history[Card.SCISSOR] = [1.0, 1.01]
+        prices = CardPrices(ROCK=1.10, PAPER=1.02, SCISSOR=1.02)
+        order = quick_grabber.buy_order(prices)
+        assert order is not None
+        assert order.card_type == Card.ROCK
+        assert order.order_type == OrderType.BUY
+
+    def test_buy_limit_price_equals_current_price(self, quick_grabber):
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.05]
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        order = quick_grabber.buy_order(prices)
+        assert order is not None
+        assert order.limit_price == pytest.approx(1.10)
+
+    def test_does_not_buy_already_held_card(self, quick_grabber):
+        # ROCK has strong momentum but is already held
+        quick_grabber._price_history[Card.ROCK] = [1.0, 1.05]
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        # PAPER/SCISSOR have no momentum → no buy
+        assert quick_grabber.buy_order(prices) is None
+
+    def test_tick_incremented_each_call(self, quick_grabber):
+        prices = CardPrices(ROCK=1.0, PAPER=1.0, SCISSOR=1.0)
+        quick_grabber.buy_order(prices)
+        quick_grabber.buy_order(prices)
+        assert quick_grabber._current_tick == 2
+
+    def test_price_history_grows_each_call(self, quick_grabber):
+        prices = CardPrices(ROCK=1.0, PAPER=1.0, SCISSOR=1.0)
+        quick_grabber.buy_order(prices)
+        quick_grabber.buy_order(prices)
+        assert len(quick_grabber._price_history[Card.ROCK]) == 2
+
+
+class TestQuickGrabberSellOrder:
+    def test_no_sell_when_no_positions(self, quick_grabber):
+        prices = CardPrices(ROCK=1.0, PAPER=1.0, SCISSOR=1.0)
+        assert quick_grabber.sell_order(prices) is None
+
+    def test_profit_target_exit(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        # 4% above entry price triggers profit exit
+        prices = CardPrices(ROCK=1.04, PAPER=1.0, SCISSOR=1.0)
+        order = quick_grabber.sell_order(prices)
+        assert order is not None
+        assert order.card_type == Card.ROCK
+        assert order.order_type == OrderType.SELL
+        assert len(quick_grabber._positions) == 0
+
+    def test_profit_target_not_triggered_just_below(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._current_tick = 2
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        # 3.9% — just below 4% profit target, and no stop-loss (above entry)
+        prices = CardPrices(ROCK=1.039, PAPER=1.0, SCISSOR=1.0)
+        assert quick_grabber.sell_order(prices) is None
+
+    def test_stop_loss_exit(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        # 3% below entry price triggers stop-loss
+        prices = CardPrices(ROCK=0.97, PAPER=1.0, SCISSOR=1.0)
+        order = quick_grabber.sell_order(prices)
+        assert order is not None
+        assert order.card_type == Card.ROCK
+        assert order.order_type == OrderType.SELL
+        assert len(quick_grabber._positions) == 0
+
+    def test_stop_loss_not_triggered_just_above(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._current_tick = 2
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        # 2.9% below — just above stop-loss floor
+        prices = CardPrices(ROCK=0.971, PAPER=1.0, SCISSOR=1.0)
+        assert quick_grabber.sell_order(prices) is None
+
+    def test_forced_exit_after_max_hold_ticks(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._current_tick = 6  # 6 - 0 = 6 >= max_hold_ticks(5)
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.01, PAPER=1.0, SCISSOR=1.0)  # between thresholds
+        order = quick_grabber.sell_order(prices)
+        assert order is not None
+        assert order.card_type == Card.ROCK
+
+    def test_no_forced_exit_before_max_hold_ticks(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._current_tick = 3  # 3 < max_hold_ticks(5)
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.01, PAPER=1.0, SCISSOR=1.0)
+        assert quick_grabber.sell_order(prices) is None
+
+    def test_position_removed_on_exit(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.04, PAPER=1.0, SCISSOR=1.0)
+        quick_grabber.sell_order(prices)
+        assert len(quick_grabber._positions) == 0
+
+    def test_skips_position_with_empty_deck(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 0
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        assert quick_grabber.sell_order(prices) is None
+
+
+class TestQuickGrabberWakeUpAgent:
+    def _seed_buy_signal(self, qg: QuickGrabber):
+        """Force a buy signal on ROCK (10% momentum, above 5% threshold)."""
+        qg._price_history[Card.ROCK] = [1.0, 1.05]
+        qg._price_history[Card.PAPER] = [1.0, 1.0]
+        qg._price_history[Card.SCISSOR] = [1.0, 1.0]
+
+    def test_records_post_clearing_price_as_entry(self, quick_grabber):
+        self._seed_buy_signal(quick_grabber)
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        buy_order, _, callback = quick_grabber.wake_up_agent(prices)
+        assert buy_order is not None
+
+        post_price = 1.155  # market moved after clearing (5% up from our buy pressure)
+        callback(successful=True, exchanged_prices={Card.ROCK: post_price, Card.PAPER: 1.0, Card.SCISSOR: 1.0})
+        assert len(quick_grabber._positions) == 1
+        assert quick_grabber._positions[0][2] == pytest.approx(post_price)
+
+    def test_buy_updates_deck_and_deducts_money(self, quick_grabber):
+        self._seed_buy_signal(quick_grabber)
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        buy_order, _, callback = quick_grabber.wake_up_agent(prices)
+        assert buy_order is not None
+        initial_money = quick_grabber.money
+        callback(successful=True, exchanged_prices={Card.ROCK: 1.10, Card.PAPER: 1.0, Card.SCISSOR: 1.0})
+        assert quick_grabber.deck[Card.ROCK] == 1
+        assert quick_grabber.money == pytest.approx(initial_money - 1.10)
+
+    def test_failed_buy_does_not_update_state(self, quick_grabber):
+        self._seed_buy_signal(quick_grabber)
+        prices = CardPrices(ROCK=1.10, PAPER=1.0, SCISSOR=1.0)
+        _, _, callback = quick_grabber.wake_up_agent(prices)
+        initial_money = quick_grabber.money
+        callback(successful=False, exchanged_prices={Card.ROCK: 1.10, Card.PAPER: 1.0, Card.SCISSOR: 1.0})
+        assert quick_grabber.money == initial_money
+        assert len(quick_grabber._positions) == 0
+
+    def test_sell_callback_updates_money_and_deck(self, quick_grabber):
+        quick_grabber.deck[Card.ROCK] = 1
+        quick_grabber._positions.append((Card.ROCK, 0, 1.0))
+        prices = CardPrices(ROCK=1.04, PAPER=1.0, SCISSOR=1.0)  # profit target hit
+        _, sell_order, callback = quick_grabber.wake_up_agent(prices)
+        assert sell_order is not None
+        initial_money = quick_grabber.money
+        callback(successful=True, exchanged_prices={Card.ROCK: 1.04, Card.PAPER: 1.0, Card.SCISSOR: 1.0})
+        assert quick_grabber.money == pytest.approx(initial_money + 1.04)
+        assert quick_grabber.deck[Card.ROCK] == 0

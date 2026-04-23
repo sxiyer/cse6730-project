@@ -1,5 +1,5 @@
 """
-Demo script: runs the RPS market simulation with NaiveGambler and Shadow scalpers.
+Demo script: runs the RPS market simulation with NaiveGambler, Shadow, and QuickGrabber scalpers.
 
 Usage (from repo root):
     python demo.py
@@ -7,36 +7,54 @@ Usage (from repo root):
 
 from src.cse6730_project.simulation import Simulation
 from src.cse6730_project.market.markets import MarketCommon
-from src.cse6730_project.agents import NaiveGambler, Shadow
+from src.cse6730_project.agents import NaiveGambler, Shadow, QuickGrabber
 from src.cse6730_project.config import RNG_SEED
 from src.cse6730_project.models import Card
 from src.cse6730_project.games import GameResultType
 
 NUM_PLAYERS = 4
-NUM_SCALPERS = 4   # 2 NaiveGamblers + 2 Shadows (equal ratio)
+NUM_NAIVE_GAMBLERS = 2
+NUM_SHADOWS = 2
+NUM_QUICK_GRABBERS = 2
+NUM_SCALPERS = NUM_NAIVE_GAMBLERS + NUM_SHADOWS + NUM_QUICK_GRABBERS
 NUM_TICKS = 15
 SCALPER_BUDGET = 10.0
+
+_SCALPER_SUMMARY = (
+    f"{NUM_NAIVE_GAMBLERS} NaiveGambler, "
+    f"{NUM_SHADOWS} Shadow, "
+    f"{NUM_QUICK_GRABBERS} QuickGrabber"
+)
 
 market = MarketCommon()
 sim = Simulation(
     market=market,
     num_players=NUM_PLAYERS,
     num_scalpers=NUM_SCALPERS,
-    scalper_type={NaiveGambler: 2, Shadow: 2},
+    scalper_type={
+        NaiveGambler: NUM_NAIVE_GAMBLERS,
+        Shadow: NUM_SHADOWS,
+        QuickGrabber: NUM_QUICK_GRABBERS,
+    },
     num_ticks=NUM_TICKS,
     seed=RNG_SEED,
 )
 
-# Give all scalpers a starting budget
 for s in sim.scalpers:
     s.money = SCALPER_BUDGET
 
-scalper_labels = {
-    s.UID: f"{'NG' if isinstance(s, NaiveGambler) else 'SH'}-{str(s.UID)[-4:]}"
-    for s in sim.scalpers
-}
+def _label(s):
+    if isinstance(s, NaiveGambler):
+        prefix = "NG"
+    elif isinstance(s, Shadow):
+        prefix = "SH"
+    else:
+        prefix = "QG"
+    return f"{prefix}-{str(s.UID)[-4:]}"
 
-print(f"Running {NUM_TICKS} ticks | {NUM_PLAYERS} players | {NUM_SCALPERS} scalpers (2 NaiveGambler, 2 Shadow)\n")
+scalper_labels = {s.UID: _label(s) for s in sim.scalpers}
+
+print(f"Running {NUM_TICKS} ticks | {NUM_PLAYERS} players | {NUM_SCALPERS} scalpers ({_SCALPER_SUMMARY})\n")
 print(f"{'Tick':<6} {'R price':>9} {'P price':>9} {'S price':>9} {'R stock':>9} {'P stock':>9} {'S stock':>9}")
 print("-" * 66)
 
