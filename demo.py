@@ -8,9 +8,9 @@ Usage (from repo root):
 from src.cse6730_project.simulation import Simulation
 from src.cse6730_project.market.markets import MarketCommon
 from src.cse6730_project.agents import NaiveGambler, Shadow, QuickGrabber
-from src.cse6730_project.config import RNG_SEED
 from src.cse6730_project.models import Card
 from src.cse6730_project.games import GameResultType
+from src.cse6730_project.utils import rng_rand
 
 NUM_PLAYERS = 4
 NUM_NAIVE_GAMBLERS = 2
@@ -19,6 +19,11 @@ NUM_QUICK_GRABBERS = 2
 NUM_SCALPERS = NUM_NAIVE_GAMBLERS + NUM_SHADOWS + NUM_QUICK_GRABBERS
 NUM_TICKS = 15
 SCALPER_BUDGET = 10.0
+
+# Set to an integer for a reproducible run, or None for a fresh random run each time.
+SEED = None
+
+rng_rand.seed(SEED)
 
 _SCALPER_SUMMARY = (
     f"{NUM_NAIVE_GAMBLERS} NaiveGambler, "
@@ -37,7 +42,7 @@ sim = Simulation(
         QuickGrabber: NUM_QUICK_GRABBERS,
     },
     num_ticks=NUM_TICKS,
-    seed=RNG_SEED,
+    seed=SEED,
 )
 
 for s in sim.scalpers:
