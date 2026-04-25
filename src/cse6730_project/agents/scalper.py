@@ -150,9 +150,8 @@ class Shadow(Scalper):
                 executed=None,
             )
         ]
-        orders = [
-            self._create_order(order) for order in orders
-        ]  # Insert the callback function
+
+        orders = list(map(self._create_order, orders))  # Insert the callback function
 
         return orders
 
@@ -178,10 +177,11 @@ class Shadow(Scalper):
                     )
                 ]
 
-                orders = [
-                    self._create_order(order) for order in orders
-                ]  # Insert the callback function
+                orders = list(
+                    map(self._create_order, orders)
+                )  # Insert the callback function
 
+                # Insert the callback function
                 return orders
             # Priority 2: price recovered to or above EMA
             if ratio >= 1.0:
@@ -198,9 +198,9 @@ class Shadow(Scalper):
                     )
                 ]
 
-                orders = [
-                    self._create_order(order) for order in orders
-                ]  # Insert the callback function
+                orders = list(
+                    map(self._create_order, orders)
+                )  # Insert the callback function
 
                 return orders
 
@@ -223,9 +223,9 @@ class Shadow(Scalper):
                     )
                 ]
 
-                orders = [
-                    self._create_order(order) for order in orders
-                ]  # Insert the callback function
+                orders = list(
+                    map(self._create_order, orders)
+                )  # Insert the callback function
 
                 return orders
 
@@ -253,9 +253,7 @@ class NaiveGambler(Scalper):
                 executed=None,
             )
         ]
-        orders = [
-            self._create_order(order) for order in orders
-        ]  # Insert the callback function
+        orders = list(map(self._create_order, orders))  # Insert the callback function
         return orders
 
     def _sell_order(self, card_prices: CardPrices) -> list[Order]:
@@ -275,7 +273,5 @@ class NaiveGambler(Scalper):
                 executed=None,
             )
         ]
-        orders = [
-            self._create_order(order) for order in orders
-        ]  # Insert the callback function
+        orders = list(map(self._create_order, orders))  # Insert the callback function
         return orders
