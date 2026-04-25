@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Callable
 from enum import Enum
 from uuid import UUID
 
@@ -28,10 +29,14 @@ class PlayerBehavior(Enum):
 
 @dataclass
 class Order:
-    agent_UID: UUID
+    agent_UID: UUID  # We might not need it it!
     order_type: OrderType
     card_type: Card
     limit_price: float
+    order_UID: UUID  # We might not need it!
+    callback: Callable | None
+    executed: bool | None
+    exchange_price: float = 0.0
     quantity: int = 1
 
 
@@ -82,6 +87,7 @@ class TickSnapShot:
     order_volume: dict
     top_twenty_players: list[UUID]  # Sorted in decreasing order
     top_twenty_scalper: list[UUID]  # Sorted in decreasing order
+    # TODO collect info by agent type e.i. the top performing scalper class
 
 
 class GameResultType(Enum):

@@ -1,6 +1,7 @@
+from dataclasses import replace
 from typing import Callable
 from abc import abstractmethod
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from ..models import Order, CardPrices, Card, OrderType
 from ..utils import rng_rand
@@ -11,41 +12,33 @@ class Scalper(Agent):
     def __init__(self, uid: UUID, money: float = 0.0):
         super().__init__(uid, money)
 
-    def wake_up_agent(
-        self, card_prices: CardPrices
-    ) -> list[tuple[Order | None, Order | None, Callable]] | None:
+    def wake_up_agent(self, card_prices: CardPrices) -> tuple[list[Order], list[Order]]:
         """create a list of orders with callbacks to update agent"""
         buy_order = self._buy_order(card_prices)
         sell_order = self._sell_order(card_prices)
 
-        callbacks = []
-        if buy_order:
-            for order in buy_order:
-                callbacks.append((order, None, self._create_order(order)))
-        if sell_order:
-            for order in sell_order:
-                callbacks.append((None, order, self._create_order(order)))
+        return (buy_order, sell_order)
 
-        return callbacks
+    def _create_order(self, order: Order) -> Order:
 
-    def _create_order(self, order: Order) -> Callable:
-
-        def update_agent(successful: bool, exchanged_prices) -> None:
-            if successful and order and order.order_type == OrderType.BUY:
+        def update_agent() -> None:
+            if order and order.executed and order.order_type == OrderType.BUY:
                 self.deck[order.card_type] += order.quantity
-                self.money -= exchanged_prices[order.card_type] * order.quantity
-            if successful and order and order.order_type == OrderType.BUY:
+                self.money -= order.exchange_price * order.quantity
+            if order and order.executed and order.order_type == OrderType.BUY:
                 self.deck[order.card_type] -= order.quantity
-                self.money += exchanged_prices[order.card_type] * order.quantity
+                self.money += order.exchange_price * order.quantity
 
-        return update_agent
+        order = replace(order, callback=update_agent)
+
+        return order
 
     @abstractmethod
-    def _buy_order(self, card_prices: CardPrices) -> list[Order] | None:
+    def _buy_order(self, card_prices: CardPrices) -> list[Order]:
         pass
 
     @abstractmethod
-    def _sell_order(self, card_prices: CardPrices) -> list[Order] | None:
+    def _sell_order(self, card_prices: CardPrices) -> list[Order]:
         pass
 
 
@@ -106,26 +99,29 @@ class Shadow(Scalper):
             return 0.0
         return history[-1] - history[-1 - self.trend_window]
 
-    def _create_order(self, order: Order) -> Callable:
+    def _create_order(self, order: Order) -> Order:
+        """This function inserts a callback to an existing order"""
 
-        def update_agent(successful: bool, exchanged_prices) -> None:
-            if successful and order and order.order_type == OrderType.BUY:
+        def update_agent() -> None:
+            if order and order.executed and order.order_type == OrderType.BUY:
                 self.deck[order.card_type] += order.quantity
-                self.money -= exchanged_prices[order.card_type] * order.quantity
+                self.money -= order.exchange_price * order.quantity
                 self._positions.append(
                     (
                         order.card_type,
                         self._current_tick,
-                        exchanged_prices[order.card_type],
+                        order.exchange_price,
                     )
                 )
-            if successful and order and order.order_type == OrderType.BUY:
+            if order and order.executed and order.order_type == OrderType.BUY:
                 self.deck[order.card_type] -= order.quantity
-                self.money += exchanged_prices[order.card_type] * order.quantity
+                self.money += order.exchange_price * order.quantity
 
-        return update_agent
+        order = replace(order, callback=update_agent)
 
-    def _buy_order(self, card_prices: CardPrices) -> list[Order] | None:
+        return order
+
+    def _buy_order(self, card_prices: CardPrices) -> list[Order]:
         """Buy the most underpriced card — only when that card's EMA is flat or rising."""
         for card in Card:
             self._update_ema(card, card_prices[card])
@@ -139,21 +135,28 @@ class Shadow(Scalper):
             and self._ema_trend(card) >= 0  # only buy in flat/uptrend
         ]
         if not candidates:
-            return None
+            return []
         card, ratio = min(candidates, key=lambda x: x[1])
         if ratio >= 1.0:
-            return None  # no card is below its EMA
+            return []  # no card is below its EMA
         orders = [
             Order(
                 agent_UID=self.UID,
                 order_type=OrderType.BUY,
                 card_type=card,
                 limit_price=card_prices[card],
+                order_UID=uuid4(),
+                callback=None,
+                executed=None,
             )
         ]
+        orders = [
+            self._create_order(order) for order in orders
+        ]  # Insert the callback function
+
         return orders
 
-    def _sell_order(self, card_prices: CardPrices) -> list[Order] | None:
+    def _sell_order(self, card_prices: CardPrices) -> list[Order]:
         """Exit when EMA turns negative, price recovers to EMA, or at max_hold_ticks."""
         for i, (card, tick_bought, _) in enumerate(self._positions):
             if self.deck[card] <= 0:
@@ -169,8 +172,16 @@ class Shadow(Scalper):
                         order_type=OrderType.SELL,
                         card_type=card,
                         limit_price=card_prices[card],
+                        order_UID=uuid4(),
+                        callback=None,
+                        executed=None,
                     )
                 ]
+
+                orders = [
+                    self._create_order(order) for order in orders
+                ]  # Insert the callback function
+
                 return orders
             # Priority 2: price recovered to or above EMA
             if ratio >= 1.0:
@@ -181,8 +192,16 @@ class Shadow(Scalper):
                         order_type=OrderType.SELL,
                         card_type=card,
                         limit_price=card_prices[card],
+                        order_UID=uuid4(),
+                        callback=None,
+                        executed=None,
                     )
                 ]
+
+                orders = [
+                    self._create_order(order) for order in orders
+                ]  # Insert the callback function
+
                 return orders
 
         # Priority 3: forced exit
@@ -198,11 +217,19 @@ class Shadow(Scalper):
                         order_type=OrderType.SELL,
                         card_type=card,
                         limit_price=card_prices[card],
+                        order_UID=uuid4(),
+                        callback=None,
+                        executed=None,
                     )
                 ]
+
+                orders = [
+                    self._create_order(order) for order in orders
+                ]  # Insert the callback function
+
                 return orders
 
-        return None
+        return []
 
 
 class NaiveGambler(Scalper):
@@ -211,7 +238,7 @@ class NaiveGambler(Scalper):
     Each tick it submits one random buy order and one random sell order (if it owns any cards).
     """
 
-    def _buy_order(self, card_prices: CardPrices) -> list[Order] | None:
+    def _buy_order(self, card_prices: CardPrices) -> list[Order]:
         card = rng_rand.choice(list(Card))
         price = round(rng_rand.uniform(0.5, 2.0), 2)
         # TODO: What if the market could tell the agent the buy/sell spread?
@@ -221,14 +248,20 @@ class NaiveGambler(Scalper):
                 order_type=OrderType.BUY,
                 card_type=card,
                 limit_price=price,
+                order_UID=uuid4(),
+                callback=None,
+                executed=None,
             )
         ]
+        orders = [
+            self._create_order(order) for order in orders
+        ]  # Insert the callback function
         return orders
 
-    def _sell_order(self, card_prices: CardPrices) -> list[Order] | None:
+    def _sell_order(self, card_prices: CardPrices) -> list[Order]:
         owned = [card for card, count in self.deck.items() if count > 0]
         if not owned:
-            return None
+            return []
         card = rng_rand.choice(owned)
         price = round(rng_rand.uniform(0.5, 2.0), 2)
         orders = [
@@ -237,6 +270,12 @@ class NaiveGambler(Scalper):
                 order_type=OrderType.SELL,
                 card_type=card,
                 limit_price=price,
+                order_UID=uuid4(),
+                callback=None,
+                executed=None,
             )
         ]
+        orders = [
+            self._create_order(order) for order in orders
+        ]  # Insert the callback function
         return orders

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Callable
 from uuid import UUID
 
 from ..models import Order, Card, CardPrices
@@ -13,7 +12,5 @@ class Agent(ABC):
         self.deck: dict[Card, int] = {card: 0 for card in Card}
 
     @abstractmethod
-    def wake_up_agent(
-        self, card_prices: CardPrices
-    ) -> list[tuple[Order | None, Order | None, Callable]] | None:
+    def wake_up_agent(self, card_prices: CardPrices) -> tuple[list[Order], list[Order]]:
         pass
