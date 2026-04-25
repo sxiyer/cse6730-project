@@ -1,11 +1,12 @@
-from typing import Callable
+from dataclasses import replace
 from abc import abstractmethod
+from typing import Callable
 from uuid import UUID
 import random
 
-from .base import Agent
+from ..models import Card, PlayerBehavior, CardPrices, Order, GameResultType, OrderType
 from ..utils import rng_rand
-from ..models import Card, PlayerBehavior, CardPrices, Order, GameResultType
+from .base import Agent
 
 
 class Player(Agent):
@@ -16,7 +17,6 @@ class Player(Agent):
 
     def shuffleDeck(self) -> list[Card]:
         cards = []
-
         for card, count in self.deck.items():
             cards.extend([card] * count)
 
@@ -24,32 +24,39 @@ class Player(Agent):
 
         return cards
 
-    def wake_up_agent(
-        self, card_prices: CardPrices
-    ) -> list[tuple[Order | None, Order | None, Callable]] | None:
+    def wake_up_agent(self, card_prices: CardPrices) -> tuple[list[Order], list[Order]]:
         """The function takes in the current value of all three cards
         and returns a function to allow the simulation to update the
         agent's deck and money
         A player can only post a single buy/sell order
+        tupe[list[Order], list[Order]]: Buy and Sell Orders
         """
 
         buy_order = self._buy_order(card_prices)
         sell_order = self._sell_order(card_prices)
 
-        def update_agent(successful: bool, exchanged_prices: dict[Card, float]) -> None:
-            if successful and buy_order:
-                self.deck[buy_order.card_type] += buy_order.quantity
-                self.money -= exchanged_prices[buy_order.card_type] * buy_order.quantity
-            if successful and sell_order:
-                self.deck[sell_order.card_type] -= sell_order.quantity
-                self.money += (
-                    exchanged_prices[sell_order.card_type] * sell_order.quantity
-                )
+        if buy_order and sell_order:
+            return ([buy_order], [sell_order])
+        elif buy_order:
+            return ([buy_order], [])
+        elif sell_order:
+            return ([], [sell_order])
+        else:
+            return ([], [])
 
-        if self._buy_order and self._sell_order:
-            return [(buy_order, sell_order, update_agent)]
-        # The agent won't participate
-        return None
+    def _create_order(self, order: Order) -> Order:
+
+        def update_agent() -> None:
+            if order and order.executed and order.order_type == OrderType.BUY:
+                self.deck[order.card_type] += order.quantity
+                self.money -= order.exchange_price * order.quantity
+            if order and order.executed and order.order_type == OrderType.SELL:
+                self.deck[order.card_type] -= order.quantity
+                self.money += order.exchange_price * order.quantity
+
+        order = replace(order, callback=update_agent)
+
+        return order
 
     def update_game_results(self, result: GameResultType) -> None:
         """Returns a function to update the agent on the result of the game"""
