@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+import copy
 
-from ..models import Order, Card, CardPrices, Transaction
+from ..models import Order, Card, CardPrices
 
 
 class Market(ABC):
@@ -12,13 +13,12 @@ class Market(ABC):
     ):
         self.name = name
         self.stock = {card: 0 for card in Card}
-        self.prices = CardPrices(ROCK=0, PAPER=0, SCISSOR=0)
+        self.prices = CardPrices(ROCK=0.0, PAPER=0.0, SCISSOR=0.0)
         self.buy_list: list[Order] | None = sell_list
         self.sell_list: list[Order] | None = buy_list
-        self.executed_trades: list[Transaction] = []
 
     @abstractmethod
-    def clear(self) -> list[Transaction]:
+    def clear(self) -> None:
         pass
 
     @abstractmethod
@@ -26,11 +26,7 @@ class Market(ABC):
         pass
 
     def get_prices(self) -> CardPrices:
-        return CardPrices(
-            ROCK=self.prices[Card.ROCK],
-            PAPER=self.prices[Card.PAPER],
-            SCISSOR=self.prices[Card.PAPER],
-        )
+        return copy.deepcopy(self.prices)
 
     def get_stock(self) -> dict:
         return self.stock
