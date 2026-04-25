@@ -14,8 +14,8 @@ class Market(ABC):
         self.name = name
         self.stock = {card: 0 for card in Card}
         self.prices = CardPrices(ROCK=0.0, PAPER=0.0, SCISSOR=0.0)
-        self.buy_list: list[Order] | None = sell_list
-        self.sell_list: list[Order] | None = buy_list
+        self.buy_list: list[Order] | None = buy_list
+        self.sell_list: list[Order] | None = sell_list
 
     @abstractmethod
     def clear(self) -> None:
@@ -26,10 +26,10 @@ class Market(ABC):
         pass
 
     def get_prices(self) -> CardPrices:
-        return copy.deepcopy(self.prices)
+        return copy.copy(self.prices)
 
     def get_stock(self) -> dict:
-        return copy.deepcopy(self.stock)
+        return copy.copy(self.stock)
 
     def insert_orders(self, buy_orders: list[Order], sell_orders: list[Order]) -> None:
         self.buy_list = buy_orders
