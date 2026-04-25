@@ -29,7 +29,7 @@ class Market(ABC):
         return copy.deepcopy(self.prices)
 
     def get_stock(self) -> dict:
-        return self.stock
+        return copy.deepcopy(self.stock)
 
     def insert_orders(self, buy_orders: list[Order], sell_orders: list[Order]) -> None:
         self.buy_list = buy_orders
