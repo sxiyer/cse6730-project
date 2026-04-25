@@ -1,4 +1,6 @@
-from ..models import Card, Order, OrderType, Transaction
+from dataclasses import replace
+
+from ..models import Card, Order, OrderType
 from . import Market
 
 
@@ -6,24 +8,7 @@ class MarketCommon(Market):
     def __init__(self):
         super().__init__(name="common")
 
-    def submit_order(self, order: Order) -> bool:
-        if order.order_type == OrderType.BUY:
-            # Accept buy if agent is willing to pay at least the current price
-            # and the market has enough stock
-            if (
-                order.quantity <= self.stock[order.card_type]
-                and order.limit_price >= self.prices[order.card_type]
-            ):
-                if self.buy_list:
-                    self.buy_list.append(order)
-                return True
-            return False
-        else:  # SELL
-            if self.sell_list:
-                self.sell_list.append(order)
-            return True
-
-    def clear(self) -> list[Transaction]:
+    def clear(self) -> None:
         """
         Process all queued orders per card type.
         - Execute accepted buys: deduct stock, record trade.
@@ -46,22 +31,16 @@ class MarketCommon(Market):
         # current values of cards. The market should match bids to asks
 
         # TODO Fix transcation logic: it returns none!!
-        transactions: list[Transaction] = []
         if self.buy_list and self.sell_list:
             for order in self.buy_list:
-                transactions.append(Transaction(order.agent_UID, False, 0))
+                replace(order, executed=False)
             for order in self.sell_list:
-                transactions.append(Transaction(order.agent_UID, False, 0))
+                replace(order, executed=False)
 
         self.sell_list = None
         self.buy_list = None
-        return transactions  # TODO Implement order execution logic
 
 
 class MarketSimple(Market):
     def __init__(self):
         super().__init__(name="simple")
-
-    def submit_order(self, order) -> bool:
-        # Any order is successful
-        return True
