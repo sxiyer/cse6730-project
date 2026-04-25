@@ -74,13 +74,6 @@ class OdeConfig:
 
 
 @dataclass
-class Transaction:
-    agent_UID: UUID
-    successful: bool
-    exchange_price: float
-
-
-@dataclass
 class TickSnapShot:
     tick: int
     card_prices: CardPrices
