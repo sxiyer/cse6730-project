@@ -4,8 +4,8 @@ from uuid import UUID
 
 import numpy as np
 
+from ..models import AgentType, Order, TickSnapShot, GameResultType, AgentSpecs
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
-from ..models import AgentType, Order, TickSnapShot, GameResultType
 from ..agents import Agent, Player, Scalper, PlayerOneCard
 from ..games import Game, GameOneCard
 from ..market import Market
