@@ -23,6 +23,7 @@ class Player(Agent):
     ):
         super().__init__(uid, money)
         self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
+        self.history: list[GameResultType] = []
         self._seed_fn = seed_deck
         seed_deck(self.deck)
 
