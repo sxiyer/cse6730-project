@@ -32,7 +32,7 @@ class ODEVisualizer(Visualizer):
         fig, ax = plt.subplots(figsize=(5, 3))
 
         for i, y in enumerate(ys):
-            logger.debug(f"y{i} : {y}")
+            # logger.debug(f"y{i} : {y}")
             ax.plot(t, y, linewidth=1.5)
 
         if simparams is None:

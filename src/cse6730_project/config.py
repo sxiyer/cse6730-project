@@ -33,6 +33,12 @@ PAYOFF: dict[tuple[Card, Card], int] = {
     (Card.PAPER, Card.ROCK): 1,
 }
 
+SEED_DECK_WEIGHTS: dict[Card, float] = {
+    Card.ROCK: 1,
+    Card.PAPER: 0,
+    Card.SCISSOR: 1,
+}
+
 
 # Baseline ODE solver default params.
 # Used in ode.py

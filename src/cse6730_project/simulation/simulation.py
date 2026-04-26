@@ -4,13 +4,14 @@ from uuid import UUID
 
 import numpy as np
 
-from ..agents import Agent, Player, Scalper, PlayerOneCard
+from ..agents import Agent, Player, Scalper
+from ..agents.seeding import seed_weighted, SeedFunction
 from ..market import Market
-from ..config import *
+from ..config import SEED_DECK_WEIGHTS
 from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
 from ..utils import logger
-from ..models import AgentType, Order, Transaction
+from ..models import AgentType, Order, Transaction, Card
 from ..games import Game, GameResultType, GameOneCard
 
 
@@ -29,7 +30,7 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: dict[type[Player], int] = {PlayerOneCard: 1},
+        player_type: dict[type[Player], int] = {Player: 1},
         scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
@@ -77,7 +78,11 @@ class Simulation:
         for player, population in player_type.items():
             ratio = self.num_players * (population // denominator)
             for _ in range(ratio):
-                p: Player = player(uid=UUID(int=(counter)), money=PLAYER_STARTING_MONEY)
+                p: Player = player(
+                    uid=UUID(int=(counter)),
+                    money=PLAYER_STARTING_MONEY,
+                    seed_deck=seed_weighted(SEED_DECK_WEIGHTS),
+                )
                 counter += 1
                 self.players.append(p)
 
