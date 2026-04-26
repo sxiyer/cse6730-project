@@ -21,10 +21,6 @@ class Market(ABC):
     def clear(self) -> None:
         pass
 
-    @abstractmethod
-    def submit_order(self, order: Order) -> bool:
-        pass
-
     def get_prices(self) -> CardPrices:
         return copy.copy(self.prices)
 
