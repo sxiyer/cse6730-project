@@ -66,8 +66,10 @@ class Simulation:
         self._game_history = []
         self.rng_np = np.random.default_rng(seed=seed)
 
-        assert num_players >= 2, "Number of players must be greater than or equal to 2!"
-        assert num_players % 2 == 0, "Number of players must be an even number!"
+        if num_players < 2:
+            raise ValueError("Number of players must be greater than or equal to 2!")
+        if num_players % 2 != 0:
+            raise ValueError("Number of players must be an even number!")
 
         # Initialize some basic players according to specified player_type
 
