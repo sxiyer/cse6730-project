@@ -4,14 +4,14 @@ from uuid import UUID
 
 import numpy as np
 
-from ..agents import Agent, Player, Scalper, PlayerOneCard
-from ..market import Market
-from ..config import *
-from ..reporting import *
 from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
-from ..utils import logger
-from ..models import AgentType, Order, Transaction, TickSnapShot, GameResultType
+from ..models import AgentType, Order, TickSnapShot, GameResultType
+from ..agents import Agent, Player, Scalper, PlayerOneCard
 from ..games import Game, GameOneCard
+from ..market import Market
+from ..utils import logger
+from ..reporting import *
+from ..config import *
 
 
 class Simulation:
@@ -50,6 +50,8 @@ class Simulation:
         ------
         nothing
         """
+        self._buy_orders: list
+        self._sell_orders: list
         self.num_ticks: int = num_ticks
         self.num_players: int = num_players
         self.num_scalpers: int = num_scalpers
@@ -93,7 +95,7 @@ class Simulation:
                 counter += 1
                 self.scalpers.append(s)
 
-    def matchPlayers(
+    def _matchPlayers(
         self,
     ) -> None:
         playersLower = self.players[0 : self.num_players // 2]
@@ -108,7 +110,7 @@ class Simulation:
 
         self.matches = matches_arr
 
-    def buildGames(self) -> None:
+    def _buildGames(self) -> None:
         for match in self.matches:
             logger.debug(f"Building match at tick {self._current_tick}")
 
@@ -124,7 +126,7 @@ class Simulation:
             logger.debug(f"Game created, adding to games, GAME: {game}")
             self.games.append(game)
 
-    def playGames(self) -> None:
+    def _playGames(self) -> None:
         for game in self.games:
             game.play()
             if game.result == GameResultType.WIN:
@@ -139,7 +141,7 @@ class Simulation:
 
                 logger.debug(f"Game {game} complete! Result: TIE")
 
-    def agentUpdate(self) -> None:
+    def _agentUpdate(self) -> None:
         """
         1. Calls wake_up_agent() on every agent (players + scalpers). Each
         agen'ts wake_up_agent() runs buy_order() and sell_order() and stores
@@ -150,33 +152,19 @@ class Simulation:
         if self.market is None:
             return
 
-        # Call all agents and collect their orders and callbacks in a map for easy access after market clearing
-        callback_map: dict[UUID, Callable] = {}
-        sell_list: list[Order] = []
-        buy_list: list[Order] = []
+        # Call all agents and collect their orders
+        buy_orders: list[Order] = []
+        sell_orders: list[Order] = []
         card_prices = self.market.get_prices()
         for agent in self.players + self.scalpers:
-            orders = agent.wake_up_agent(card_prices)
-            if orders:
-                buy_order, sell_order, call_back = orders
-                callback_map[agent.UID] = call_back
-                logging_message: str = f"Agent {agent.UID} submitted "
-                if buy_order:
-                    buy_list.append(buy_order)
-                    logging_message += f"BUY {buy_order.card_type.value} x{buy_order.quantity} at {buy_order.limit_price:.2f} "
-                if sell_order:
-                    sell_list.append(sell_order)
-                    logging_message += f"SELL {sell_order.card_type.value} x{sell_order.quantity} at {sell_order.limit_price:.2f}"
-                logger.debug(logging_message)
-            else:
-                continue
+            buy_orders, sell_orders = agent.wake_up_agent(card_prices)
 
-        self.callback_map = callback_map
-
+        self._buy_orders = buy_orders
+        self._sell_orders = sell_orders
         # Submit all orders to the market
-        self.market.insert_orders(buy_list, sell_list)
+        self.market.insert_orders(buy_orders, sell_orders)
 
-    def marketClears(self) -> None:
+    def _marketClears(self) -> None:
         """
         1. Calls market.clear(), which matches orders per card type
         2. After clearing, reads market.executed_trades and
@@ -185,17 +173,15 @@ class Simulation:
         if self.market is None:
             return
 
-        transactions: list[Transaction] = self.market.clear()
+        # Tell the market to execute trades
+        self.market.clear()
 
-        # update agents based on executed transactions
-        for transaction in transactions:
-            agent_id = transaction.agent_UID
-            callback = self.callback_map[agent_id]
+        # Update agents' decks and money
+        for order in self._buy_orders + self._sell_orders:
+            order.callback()
 
-            callback(
-                successful=transaction.successful,
-                exchanged_prices=transaction.exchange_price,
-            )
+        self._buy_orders = []
+        self._sell_orders = []
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
@@ -248,11 +234,33 @@ class Simulation:
         self._current_tick += 1
 
     def _step(self) -> None:
-        self.matchPlayers()  # Matchmaker to create pairs of players
-        self.buildGames()  # Setup games between players
-        self.playGames()  # All games play
-        self.agentUpdate()  # Players review outcomes, submit orders (or not)
-        self.marketClears()  # Market processes orders
+        self._matchPlayers()  # Matchmaker to create pairs of players
+        """
+        1. divide the players into two groups
+        2. Shuffle the second group's order
+        3. create pairs from both groups
+        4. return the a list of groups
+        """
+        self._buildGames()  # Setup games between players
+        """
+        1. for every pair of players, create an instance of a game with the two players 
+        2. return a list of games 
+        """
+        self._playGames()  # All games play
+        """
+        1. play every game
+        2. store who won/lost
+        """
+        self._agentUpdate()  # Players review outcomes, submit orders (or not)
+        """
+        1. for every agent (player + scalper), get their orders (list of sell/buy)
+        2. store the agents' callback function in a dict that maps their UUID to their callback
+        """
+        self._marketClears()  # Market processes orders
+        """
+        1. tell the market to execute trades and return a list of transactions 
+        2. update all agents on their transactions 
+        """
         self._recordState()  # Record meaningful info from this tick
 
     def run(self) -> None:
