@@ -19,7 +19,7 @@ class Player(Agent):
         self,
         uid: UUID,
         money: float = 0.0,
-        seed_deck: SeedFunction = seed_single_random,
+        seed_deck: SeedFunction = seed_single_random(),
     ):
         super().__init__(uid, money)
         self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
@@ -35,6 +35,9 @@ class Player(Agent):
         random.shuffle(cards)
 
         return cards
+
+    def postGame(self):
+        pass
 
     def buy_order(self, card_prices: CardPrices) -> Order | None:
         return None
