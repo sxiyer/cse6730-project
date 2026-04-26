@@ -7,7 +7,7 @@ from .data_models import (
     OdeConfig,
     TimeConfig,
     CardPrices,
-    Transaction,
     TickSnapShot,
     GameResultType,
+    AgentSpecs,
 )
