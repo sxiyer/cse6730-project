@@ -55,9 +55,7 @@ class Simulation:
         self.num_ticks: int = num_ticks
         self.num_players: int = num_players
         self.num_scalpers: int = num_scalpers
-        self.players: list[Player] = (
-            []
-        )  # TODO: Change to dict for O(1) access by UID? Or numpy array?
+        self.players: list[Player] = []
         self.scalpers: list[Scalper] = []
         self.market: Market | None = market
         self._current_tick: int = 0
