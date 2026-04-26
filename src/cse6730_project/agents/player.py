@@ -30,10 +30,6 @@ class Player(Agent):
 
 
 class PlayerOneCard(Player):
-    # TODO: Implement a generator function that will seed the player's deck that
-    # can be swapped for different deck distribution functions. Use yielding to
-    # track and specify different populations of players getting different
-    # seeding functions for their decks
     def __init__(
         self,
         uid: UUID,
