@@ -30,6 +30,43 @@ class MarketCommon(Market):
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
 
+        if not self.buy_list or not self.sell_list:
+            if self.buy_list:
+                for order in self.buy_list:
+                    replace(order, executed=False)
+            if self.sell_list:
+                for order in self.sell_list:
+                    replace(order, executed=False)
+
+        num_buy: int = 0
+        num_sell: int = 0
+        if self.buy_list and self.sell_list:
+            num_buy = len(self.buy_list)
+            num_sell = len(self.sell_list)
+
+        visited: list[bool] = [False] * (num_buy + num_sell)
+        recStack: list[bool] = [False] * (num_buy + num_sell)
+
+        ## Create Mapping for Card types:
+        buy_orders_by_card: dict[Card, list[Order]] = {}
+        sell_orders_by_card: dict[Card, list[Order]] = {}
+        if self.buy_list and self.sell_list:
+            for order in self.buy_list:
+                if order.card_type not in buy_orders_by_card:
+                    buy_orders_by_card[order.card_type] = [order]
+                else:
+                    buy_orders_by_card[order.card_type].append(order)
+            for order in self.sell_list:
+                if order.card_type not in sell_orders_by_card:
+                    sell_orders_by_card[order.card_type] = [order]
+                else:
+                    sell_orders_by_card[order.card_type].append(order)
+
+        for _, orders in buy_orders_by_card.items():
+            orders.sort(key=lambda x: x.limit_price)
+        for _, orders in sell_orders_by_card.items():
+            orders.sort(key=lambda x: x.limit_price)
+
         # TODO Fix transcation logic: it returns none!!
         if self.buy_list and self.sell_list:
             for order in self.buy_list:
@@ -39,6 +76,9 @@ class MarketCommon(Market):
 
         self.sell_list = None
         self.buy_list = None
+
+    def _find_order(self) -> None:
+        """The function searching for a buy/sell order that meets the card and limit_price requirement"""
 
 
 class MarketSimple(Market):
