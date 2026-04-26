@@ -4,9 +4,15 @@ from uuid import UUID
 
 import numpy as np
 
-from ..config import RNG_SEED, PLAYER_STARTING_MONEY, SCALPER_STARTING_MONEY
+from ..config import (
+    RNG_SEED,
+    PLAYER_STARTING_MONEY,
+    SCALPER_STARTING_MONEY,
+    SEED_DECK_WEIGHTS,
+)
+from ..agents.seeding import seed_weighted, SeedFunction, seed_single_random
 from ..models import AgentType, Order, TickSnapShot, GameResultType, Card
-from ..agents import Agent, Player, Scalper, PlayerOneCard
+from ..agents import Agent, Player, Scalper
 from ..games import Game, GameOneCard
 from ..market import Market
 from ..utils import logger
@@ -27,7 +33,7 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: dict[type[Player], int] = {PlayerOneCard: 1},
+        player_type: dict[type[Player], int] = {Player: 1},
         scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
@@ -78,7 +84,11 @@ class Simulation:
         for player, population in player_type.items():
             ratio = (self.num_players * population) // denominator
             for _ in range(ratio):
-                p: Player = player(uid=UUID(int=counter), money=PLAYER_STARTING_MONEY)
+                p: Player = player(
+                    uid=UUID(int=(counter)),
+                    money=PLAYER_STARTING_MONEY,
+                    seed_deck=seed_single_random(),
+                )
                 counter += 1
                 self.players.append(p)
 
@@ -184,7 +194,7 @@ class Simulation:
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
 
-    def _get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
+    def get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
         card_counts: dict[Card, int] = {card: 0 for card in Card}
 
         match agent_type:

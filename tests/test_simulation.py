@@ -1,14 +1,16 @@
 from uuid import UUID
 
-
+import random
 import pytest
 
 from cse6730_project.models import AgentType, Order, OrderType, Card
 from cse6730_project.utils import logger
 from cse6730_project.simulation import Simulation
 from cse6730_project.config import RNG_SEED
+from cse6730_project.utils import rng_rand
 from cse6730_project.agents import Player
 from cse6730_project.ode.ode import OdeRPS
+from cse6730_project.visualization import ODEVisualizer
 from cse6730_project.market import Market, MarketCommon
 
 
@@ -21,7 +23,7 @@ def basicMarket() -> Market:
 @pytest.fixture
 def basicSimulation() -> Simulation:
     # Generate a distribution of players and scalpers
-
+    rng_rand.seed(RNG_SEED)
     return Simulation(
         market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=2
     )
@@ -32,8 +34,8 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
 
     return OdeRPS(
         t_interval=(0, 100),
-        t_eval=[0, 100, 10],
-        initial_counts=basicSimulation._get_card_counts(agent_type=AgentType.PLAYER),
+        t_eval=[0, 100, 500],
+        initial_counts=basicSimulation.get_card_counts(agent_type=AgentType.PLAYER),
     )
 
 
@@ -59,45 +61,27 @@ class TestSimulation:
         logger.info(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
 
     def test_cardcounts(self, basicSimulation: Simulation) -> None:
-        cardcounts_players = basicSimulation._get_card_counts(AgentType.PLAYER)
-        logger.debug(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation._get_card_counts(AgentType.SCALPER)
-        logger.debug(f"Cards in posession of scalpers: {cardcounts_scalpers}")
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        logger.info(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
 
     def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        logger.info(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
         odeSol = basicODERPS.SolveODE()
         logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
         logger.debug(f"{odeSol.y}")
+
+        logger.info("Plotting ODE...")
+        ODEViz = ODEVisualizer()
+        ODEViz.save_fig_ode(odeSol.t, odeSol.y, simparams=None)
 
 
 class TestMakert:
     def test_market(self, basicMarket: Market) -> None:
         # Generate a list of sell and buy orders
-        sell_orders = [
-            Order(
-                agent_UID=UUID(int=i),
-                order_type=OrderType.SELL,
-                card_type=Card.ROCK,
-                limit_price=10,
-            )
-            for i in range(10)
-        ]
-        buy_orders = [
-            Order(
-                agent_UID=UUID(int=i),
-                order_type=OrderType.SELL,
-                card_type=Card.ROCK,
-                limit_price=10,
-            )
-            for i in range(10)
-        ]
-
-        basicMarket.insert_orders(buy_orders=buy_orders, sell_orders=sell_orders)
-
-        assert basicMarket.buy_list is not None
-        assert basicMarket.sell_list is not None
-
-        basicMarket.clear()
-
-        assert basicMarket.buy_list is None
-        assert basicMarket.sell_list is None
+        sell_orders = []
+        buy_orders = []

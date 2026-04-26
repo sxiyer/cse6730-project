@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 from enum import Enum
 from uuid import UUID
+from pathlib import Path
 
 
 ##### Enums #####
@@ -95,8 +96,6 @@ class TickSnapShot:
     # TODO collect info by agent type e.i. the top performing scalper class
 
 
-@dataclass
-class AgentSpecs:
-    agent_type: Callable
-    count: int
-    kwargs: dict = field(default_factory=dict)
+@dataclass(frozen=True)
+class VizConfig:
+    base_dir: Path = Path("results/plots")

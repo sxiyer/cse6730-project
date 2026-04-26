@@ -1,0 +1,238 @@
+@startuml cp2_classdiagram
+
+title Checkpoint 2 Simulation Class Diagram
+' ── Enums & Data Models ──────────────────────────
+
+enum Card {
+  ROCK = "R"
+  PAPER = "P"
+  SCISSOR = "S"
+}
+
+enum OrderType {
+  BUY
+  SELL
+}
+
+enum GameResultType {
+  WIN
+  LOSS
+  TIE
+}
+
+enum AgentType {
+  ALL
+  PLAYER
+  SCALPER
+}
+
+enum PlayerBehavior {
+  NONE
+  COPYCAT
+  MUTATOR
+}
+
+class CardPrices <<dataclass>> {
+  ROCK : float
+  PAPER : float
+  SCISSOR : float
+  __getitem__(card: Card) : float
+}
+
+class Order <<dataclass>> {
+  agent_UID : UUID
+  order_type : OrderType
+  card_type : Card
+  limit_price : float
+  quantity : int = 1
+}
+
+class Transaction <<dataclass>> {
+  agent_UID : UUID
+  successful : bool
+  exchange_price : float
+}
+
+class TickSnapShot <<dataclass>> {
+  tick : int
+  card_prices : CardPrices
+  order_volume : dict
+  top_twenty_players : list[UUID]
+  top_twenty_scalper : list[UUID]
+}
+
+' ── Agents ───────────────────────────────────────
+
+abstract class Agent {
+  UID : UUID
+  money : float
+  deck : dict[Card, int]
+  {abstract} wake_up_agent(card_prices: CardPrices)
+}
+
+abstract class Player {
+  PlayerBehavior : PlayerBehavior
+  game_history : list[GameResultType]
+  shuffleDeck() : list[Card]
+  wake_up_agent(card_prices) : list[tuple] | None
+  update_game_results(result: GameResultType)
+  {abstract} _buy_order(card_prices) : Order | None
+  {abstract} _sell_order(card_prices) : Order | None
+}
+
+class PlayerOneCard {
+  __init__() : deck gets 1 random Card
+  _buy_order() : None
+  _sell_order() : None
+}
+
+abstract class Scalper {
+  wake_up_agent(card_prices) : list[tuple] | None
+  _create_order(order) : Callable
+  {abstract} _buy_order(card_prices) : list[Order] | None
+  {abstract} _sell_order(card_prices) : list[Order] | None
+}
+
+class Shadow {
+  max_hold_ticks : int
+  ema_alpha : float
+  trend_window : int
+  _ema : dict[Card, float]
+  _ema_history : dict[Card, list[float]]
+  _positions : list[tuple]
+  _update_ema(card, price)
+  _ema_trend(card) : float
+  _buy_order(prices) : list[Order] | None
+  _sell_order(prices) : list[Order] | None
+}
+
+class NaiveGambler {
+  _buy_order(prices) : list[Order] | None
+  _sell_order(prices) : list[Order] | None
+}
+
+Agent <|-- Player
+Agent <|-- Scalper
+Player <|-- PlayerOneCard
+Scalper <|-- Shadow
+Scalper <|-- NaiveGambler
+
+' ── Games ────────────────────────────────────────
+
+abstract class Game {
+  result : GameResultType | None
+  winner : Player | None
+  loser : Player | None
+  tick : int
+  players : tuple[Player, Player]
+  rounds_played : int
+  resolveRPS(play1, play2) : GameResultType
+  {abstract} play() : GameResultType
+}
+
+class GameOneCard {
+  play() : GameResultType
+}
+
+Game <|-- GameOneCard
+
+' ── Market ───────────────────────────────────────
+
+abstract class Market {
+  name : str
+  stock : dict[Card, int]
+  prices : CardPrices
+  buy_list : list[Order] | None
+  sell_list : list[Order] | None
+  executed_trades : list[Transaction]
+  {abstract} clear() : list[Transaction]
+  {abstract} submit_order(order: Order) : bool
+  get_prices() : CardPrices
+  get_stock() : dict
+  insert_orders(buys, sells)
+  getBalance() : dict
+  shuffleOrder()
+}
+
+class MarketCommon {
+  submit_order(order) : bool
+  clear() : list[Transaction]
+}
+
+class MarketSimple {
+  submit_order(order) : bool
+}
+
+Market <|-- MarketCommon
+Market <|-- MarketSimple
+
+' ── Simulation ───────────────────────────────────
+
+class Simulation {
+  num_ticks : int
+  num_players : int
+  num_scalpers : int
+  players : list[Player]
+  scalpers : list[Scalper]
+  market : Market | None
+  _current_tick : int
+  _history : list[TickSnapShot]
+  matches : ndarray
+  games : list[Game]
+  game_type : type[Game]
+  player_type : dict[type[Player], int]
+  scalper_type : dict[type[Scalper], int]
+  callback_map : dict[UUID, Callable]
+  rng_np : Generator
+  --
+  matchPlayers()
+  buildGames()
+  playGames()
+  agentUpdate()
+  marketClears()
+  _recordState()
+  _step()
+  next_tick()
+  run()
+  get_player(id) : Agent | None
+  _get_card_counts(agent_type) : dict[Card, int]
+  getHistory() : list[TickSnapShot]
+}
+
+' ── Relationships ────────────────────────────────
+
+Simulation "1" *-- "N" Player : players
+Simulation "1" *-- "M" Scalper : scalpers
+Simulation "1" o-- "0..1" Market : market
+Simulation "1" *-- "N/2" Game : games per tick
+Simulation ..> TickSnapShot : records
+Simulation ..> AgentType : _get_card_counts
+
+Game "1" --> "2" Player : players
+Game ..> GameResultType : resolveRPS returns
+Game ..> Card : played cards
+
+Player ..> Order : _buy_order / _sell_order
+Player ..> PlayerBehavior
+Player ..> GameResultType : game_history
+
+Scalper ..> Order : _buy_order / _sell_order
+
+Market ..> Order : buy_list / sell_list
+Market ..> Transaction : clear() returns
+Market ..> CardPrices : get_prices()
+Market ..> Card : stock keys
+
+Order ..> OrderType
+Order ..> Card : card_type
+
+TickSnapShot ..> CardPrices
+
+note bottom of Simulation
+  Central orchestrator. Each _step():
+  1. matchPlayers → 2. buildGames →
+  3. playGames → 4. agentUpdate →
+  5. marketClears → 6. _recordState
+end note
+
+@enduml
