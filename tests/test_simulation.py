@@ -69,6 +69,8 @@ class TestSimulation:
         logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
         logger.debug(f"{odeSol.y}")
 
+
+class TestMakert:
     def test_market(self, basicMarket: Market) -> None:
         # Generate a list of sell and buy orders
         sell_orders = [
