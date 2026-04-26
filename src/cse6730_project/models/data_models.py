@@ -1,7 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 from enum import Enum
 from uuid import UUID
+
+
+##### Enums #####
 
 
 class Card(Enum):
@@ -25,6 +28,15 @@ class PlayerBehavior(Enum):
     NONE = None  # No special behaviors
     COPYCAT = "copycat"
     MUTATOR = "mutator"
+
+
+class GameResultType(Enum):
+    WIN = "win"  # somebody won
+    LOSS = "loss"  # here for losers to know they lost
+    TIE = "tie"  # tie
+
+
+##### Data Classes #####
 
 
 @dataclass
@@ -83,7 +95,8 @@ class TickSnapShot:
     # TODO collect info by agent type e.i. the top performing scalper class
 
 
-class GameResultType(Enum):
-    WIN = "win"  # somebody won
-    LOSS = "loss"  # here for losers to know they lost
-    TIE = "tie"  # tie
+@dataclass
+class AgentSpecs:
+    agent_type: Callable
+    count: int
+    kwargs: dict = field(default_factory=dict)
