@@ -35,7 +35,7 @@ PAYOFF: dict[tuple[Card, Card], int] = {
 
 SEED_DECK_WEIGHTS: dict[Card, float] = {
     Card.ROCK: 1,
-    Card.PAPER: 0,
+    Card.PAPER: 1,
     Card.SCISSOR: 1,
 }
 

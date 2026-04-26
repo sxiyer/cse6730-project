@@ -7,10 +7,13 @@ from ..utils import rng_np, logger
 SeedFunction = Callable[[dict[Card, int]], None]
 
 
-def seed_single_random(deck: dict[Card, int]) -> None:
-    card_types = list(Card)
-    card = card_types[rng_np.integers(len(card_types))]
-    deck[card] += 1
+def seed_single_random() -> SeedFunction:
+    def _seeder(deck: dict[Card, int]):
+        card_types = list(Card)
+        card = card_types[rng_np.integers(len(card_types))]
+        deck[card] += 1
+
+    return _seeder
 
 
 def seed_weighted(weights: dict[Card, float]) -> SeedFunction:

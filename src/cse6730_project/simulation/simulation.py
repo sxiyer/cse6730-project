@@ -5,7 +5,7 @@ from uuid import UUID
 import numpy as np
 
 from ..agents import Agent, Player, Scalper
-from ..agents.seeding import seed_weighted, SeedFunction
+from ..agents.seeding import seed_weighted, SeedFunction, seed_single_random
 from ..market import Market
 from ..config import SEED_DECK_WEIGHTS
 from ..reporting import *
@@ -76,12 +76,12 @@ class Simulation:
         denominator: int = sum(player_type.values())
         counter: int = 0
         for player, population in player_type.items():
-            ratio = self.num_players * (population // denominator)
+            ratio = (self.num_players * population) // denominator
             for _ in range(ratio):
                 p: Player = player(
                     uid=UUID(int=(counter)),
                     money=PLAYER_STARTING_MONEY,
-                    seed_deck=seed_weighted(SEED_DECK_WEIGHTS),
+                    seed_deck=seed_single_random(),
                 )
                 counter += 1
                 self.players.append(p)
@@ -89,7 +89,7 @@ class Simulation:
         denominator = sum(scalper_type.values())
         counter = 0
         for scalper, population in scalper_type.items():
-            ratio = self.num_scalpers * population // denominator
+            ratio = (self.num_scalpers * population) // denominator
             for _ in range(ratio):
                 s: Scalper = scalper(
                     uid=UUID(int=counter), money=SCALPER_STARTING_MONEY
