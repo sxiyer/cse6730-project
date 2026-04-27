@@ -1,4 +1,5 @@
 from dataclasses import replace
+from uuid import UUID
 
 from ..models import Card, Order, OrderType
 from . import Market
@@ -77,6 +78,19 @@ class MarketCommon(Market):
             orders.sort(key=lambda x: x.limit_price)
         for _, orders in sell_orders_by_card.items():
             orders.sort(key=lambda x: x.limit_price)
+
+        ## Creating mapping from agentID to its Orders
+        agents_orders: dict[UUID, tuple[list[Order], list[Order]]] = {}
+        ## agent.UID -> (buy-list, sell-list)
+        if self.buy_list and self.sell_list:
+            for order in self.buy_list:
+                if order.agent_UID not in agents_orders:
+                    agents_orders[order.agent_UID] = ([], [])
+                agents_orders[order.agent_UID][0].append(order)
+            for order in self.sell_list:
+                if order.agent_UID not in agents_orders:
+                    agents_orders[order.agent_UID] = ([], [])
+                agents_orders[order.agent_UID][1].append(order)
 
         # TODO Fix transcation logic: it returns none!!
         if self.buy_list and self.sell_list:
