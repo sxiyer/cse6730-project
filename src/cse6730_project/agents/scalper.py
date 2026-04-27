@@ -33,13 +33,11 @@ class Scalper(Agent):
 
         return order
 
-    @abstractmethod
     def _buy_order(self, card_prices: CardPrices) -> list[Order]:
-        pass
+        return list()
 
-    @abstractmethod
     def _sell_order(self, card_prices: CardPrices) -> list[Order]:
-        pass
+        return list()
 
 
 class Shadow(Scalper):

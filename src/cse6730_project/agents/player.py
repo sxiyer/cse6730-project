@@ -75,13 +75,31 @@ class Player(Agent):
         """Returns a function to update the agent on the result of the game"""
         self.game_history.append(result)
 
+    def update_state(self) -> None:
+        pass
+
     def get_game_results(self) -> list[GameResultType]:
         return self.game_history
 
-    @abstractmethod
     def _buy_order(self, card_prices: CardPrices) -> Order | None:
-        pass
+        return None 
 
-    @abstractmethod
     def _sell_order(self, card_prices: CardPrices) -> Order | None:
-        pass
+        return None
+
+class MutatorPlayer(Player):
+    def __init__(self, uid, money=0.0, seed_deck=seed_single_random()):
+        super().__init__(uid, money, seed_deck)
+        self.PlayerBehavior = PlayerBehavior.MUTATOR
+    def update_state(self) -> None:
+
+        return super().update_state()
+        
+class CopycatPlayer(Player):
+    def __init__(self, uid, money=0.0, seed_deck=seed_single_random()):
+        super().__init__(uid, money, seed_deck)
+        self.PlayerBehavior = PlayerBehavior.COPYCAT
+
+    def update_state(self) -> None:
+        
+        return super().update_state()

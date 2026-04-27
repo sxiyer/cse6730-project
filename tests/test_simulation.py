@@ -68,12 +68,15 @@ class TestSimulation:
 
     def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
         cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        player_pops_int = basicSimulation.get_player_populations("int")
+        player_pops_float = basicSimulation.get_player_populations("float")
+        logger.info(f"Player pop int : {player_pops_int} \n Player pop float : {player_pops_float}")
         logger.info(f"Cards in posession of players: {cardcounts_players}")
         cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
         logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
         odeSol = basicODERPS.SolveODE()
         logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
-        logger.debug(f"{odeSol.y}")
+        # logger.debug(f"{odeSol.y}")
 
         logger.info("Plotting ODE...")
         ODEViz = ODEVisualizer()
