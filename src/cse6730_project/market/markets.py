@@ -1,7 +1,8 @@
 from dataclasses import replace
 from uuid import UUID
+import bisect
 
-from ..models import Card, Order, OrderType
+from ..models import Card, Order, OrderType, AgentType
 from . import Market
 
 
@@ -55,7 +56,7 @@ class MarketCommon(Market):
             num_buy = len(self.buy_list)
             num_sell = len(self.sell_list)
 
-        visited: list[bool] = [False] * (num_buy + num_sell)
+        visited: set = set()
         recStack: list[bool] = [False] * (num_buy + num_sell)
 
         ## Create Mapping for Card types:
@@ -92,6 +93,10 @@ class MarketCommon(Market):
                     agents_orders[order.agent_UID] = ([], [])
                 agents_orders[order.agent_UID][1].append(order)
 
+        ## Go through all agents and search for orders that meet their requiremnts
+        for agent_UID, agent_orders in agents_orders.items():
+            self._find_order(agent_UID, agent_orders, buy_orders_by_card, visited)
+
         # TODO Fix transcation logic: it returns none!!
         if self.buy_list and self.sell_list:
             for order in self.buy_list:
@@ -103,8 +108,24 @@ class MarketCommon(Market):
         self.sell_list = None
         self.buy_list = None
 
-    def _find_order(self) -> None:
+    def _find_order(
+        self,
+        agent_UID: UUID,
+        agent_orders: tuple[list[Order], list[Order]],
+        all_sell_orders: dict[Card, list[Order]],
+        visited: set,
+    ) -> bool:
         """The function searching for a buy/sell order that meets the card and limit_price requirement"""
+        if agent_UID in visited:
+            return False
+        agent_buy_orders = agent_orders[0]
+        for bid in agent_buy_orders:  # For all agent bids
+            for offer in all_sell_orders[bid.card_type]:  # For all offers
+                if bid.limit_price >= offer.limit_price:
+                    if offer.agent_type == AgentType.PLAYER:
+                        successful_execution = _find_order(
+                            offer.agent_UID,
+                        )
 
 
 class MarketSimple(Market):
