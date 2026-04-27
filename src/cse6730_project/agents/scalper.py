@@ -3,7 +3,7 @@ from typing import Callable
 from abc import abstractmethod
 from uuid import UUID, uuid4
 
-from ..models import Order, CardPrices, Card, OrderType
+from ..models import Order, CardPrices, Card, OrderType, AgentType
 from ..utils import rng_rand
 from .base import Agent
 
@@ -146,6 +146,7 @@ class Shadow(Scalper):
                 card_type=card,
                 limit_price=card_prices[card],
                 order_UID=uuid4(),
+                agent_type=AgentType.SCALPER,
                 callback=None,
                 executed=None,
             )
@@ -172,6 +173,7 @@ class Shadow(Scalper):
                         card_type=card,
                         limit_price=card_prices[card],
                         order_UID=uuid4(),
+                        agent_type=AgentType.SCALPER,
                         callback=None,
                         executed=None,
                     )
@@ -193,6 +195,7 @@ class Shadow(Scalper):
                         card_type=card,
                         limit_price=card_prices[card],
                         order_UID=uuid4(),
+                        agent_type=AgentType.SCALPER,
                         callback=None,
                         executed=None,
                     )
@@ -218,6 +221,7 @@ class Shadow(Scalper):
                         card_type=card,
                         limit_price=card_prices[card],
                         order_UID=uuid4(),
+                        agent_type=AgentType.SCALPER,
                         callback=None,
                         executed=None,
                     )
@@ -249,6 +253,7 @@ class NaiveGambler(Scalper):
                 card_type=card,
                 limit_price=price,
                 order_UID=uuid4(),
+                agent_type=AgentType.SCALPER,
                 callback=None,
                 executed=None,
             )
@@ -269,6 +274,7 @@ class NaiveGambler(Scalper):
                 card_type=card,
                 limit_price=price,
                 order_UID=uuid4(),
+                agent_type=AgentType.SCALPER,
                 callback=None,
                 executed=None,
             )
