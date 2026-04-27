@@ -9,12 +9,7 @@ class MarketCommon(Market):
         super().__init__(name="common")
 
     def clear(self) -> None:
-        """
-        Process all queued orders per card type.
-        - Execute accepted buys: deduct stock, record trade.
-        - Execute all sells: add to stock, record trade.
-        - Update price based on net demand: +5% if more buys, -5% if more sells.
-        """
+        """ """
         # TODO: This clearing function does not appear to to call back to the
         # agents who placed the order, so they actually dont know if they can
         # increase/decrease their card quantities. Implement callbacks to agents
@@ -30,6 +25,7 @@ class MarketCommon(Market):
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
 
+        """ If there are no sell or buy orders, clear both"""
         if not self.buy_list or not self.sell_list:
             if self.buy_list:
                 for order in self.buy_list:
@@ -37,7 +33,21 @@ class MarketCommon(Market):
             if self.sell_list:
                 for order in self.sell_list:
                     replace(order, executed=False)
+            self.buy_list = None
+            self.sell_list = None
+            return
 
+        """
+        Embed the orders into a graph
+
+        - Agents are nodes
+        - Orders are edges:
+            - Sell orders are an in edge
+            - Buy orders are an out edge
+
+        """
+
+        ## Count the number of buy/sell orders
         num_buy: int = 0
         num_sell: int = 0
         if self.buy_list and self.sell_list:
@@ -62,6 +72,7 @@ class MarketCommon(Market):
                 else:
                     sell_orders_by_card[order.card_type].append(order)
 
+        ## Sort the orders by limit_price
         for _, orders in buy_orders_by_card.items():
             orders.sort(key=lambda x: x.limit_price)
         for _, orders in sell_orders_by_card.items():
@@ -74,6 +85,7 @@ class MarketCommon(Market):
             for order in self.sell_list:
                 replace(order, executed=False)
 
+        # Reset the buy/sell lists
         self.sell_list = None
         self.buy_list = None
 
