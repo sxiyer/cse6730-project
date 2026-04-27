@@ -49,6 +49,7 @@ class Order:
     order_UID: UUID  # We might not need it!
     callback: Callable | None
     executed: bool | None
+    agent_typ: AgentType
     exchange_price: float = 0.0
     quantity: int = 1
 
