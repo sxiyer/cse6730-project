@@ -73,10 +73,10 @@ class Player(Agent):
 
     def update_game_results(self, result: GameResultType) -> None:
         """Returns a function to update the agent on the result of the game"""
-        self.game_history.append(result)
+        self.history.append(result)
 
     def get_game_results(self) -> list[GameResultType]:
-        return self.game_history
+        return self.history
 
     @abstractmethod
     def _buy_order(self, card_prices: CardPrices) -> Order | None:
