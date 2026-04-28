@@ -46,7 +46,7 @@ class Order:
     order_type: OrderType
     card_type: Card
     limit_price: float
-    order_UID: UUID  # We might not need it!
+    order_UID: UUID | None  # We might not need it!
     callback: Callable | None
     executed: bool | None
     exchange_price: float = 0.0
