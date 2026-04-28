@@ -25,7 +25,7 @@ def basicSimulation() -> Simulation:
     # Generate a distribution of players and scalpers
     rng_rand.seed(RNG_SEED)
     return Simulation(
-        market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=2
+        market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=3
     )
 
 
@@ -70,7 +70,9 @@ class TestSimulation:
         cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
         player_pops_int = basicSimulation.get_player_populations("int")
         player_pops_float = basicSimulation.get_player_populations("float")
-        logger.info(f"Player pop int : {player_pops_int} \n Player pop float : {player_pops_float}")
+        logger.info(
+            f"Player pop int : {player_pops_int} \n Player pop float : {player_pops_float}"
+        )
         logger.info(f"Cards in posession of players: {cardcounts_players}")
         cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
         logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
@@ -81,6 +83,12 @@ class TestSimulation:
         logger.info("Plotting ODE...")
         ODEViz = ODEVisualizer()
         ODEViz.save_fig_ode(odeSol.t, odeSol.y, simparams=None)
+
+    def test_market_interactions(
+        self, basicSimulation: Simulation, basicMarket: Market
+    ) -> None:
+        basicSimulation.market = basicMarket
+        basicSimulation.run()
 
 
 class TestMakert:

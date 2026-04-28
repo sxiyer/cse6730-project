@@ -4,7 +4,15 @@ from typing import Callable
 from uuid import UUID
 import random
 
-from ..models import Card, PlayerBehavior, CardPrices, Order, GameResultType, OrderType
+from ..models import (
+    Card,
+    PlayerBehavior,
+    CardPrices,
+    Order,
+    GameResultType,
+    OrderType,
+    AgentType,
+)
 from .seeding import seed_single_random, SeedFunction
 from ..utils import rng_rand
 from .base import Agent
@@ -21,7 +29,7 @@ class Player(Agent):
         money: float = 0.0,
         seed_deck: SeedFunction = seed_single_random(),
     ):
-        super().__init__(uid, money)
+        super().__init__(uid, agent_type=AgentType.PLAYER, money=money)
         self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
         self.history: list[GameResultType] = []
         self._seed_fn = seed_deck
@@ -45,16 +53,16 @@ class Player(Agent):
         tupe[list[Order], list[Order]]: Buy and Sell Orders
         """
 
-        
-        buy_order = self._buy_order(card_prices)
-        sell_order = self._sell_order(card_prices)
+        orders: tuple = self.update_state()
+
+        buy_order, sell_order = orders
 
         if buy_order and sell_order:
-            return ([buy_order], [sell_order])
+            return (buy_order, sell_order)
         elif buy_order:
-            return ([buy_order], [])
+            return (buy_order, [])
         elif sell_order:
-            return ([], [sell_order])
+            return ([], sell_order)
         else:
             return ([], [])
 
@@ -76,15 +84,14 @@ class Player(Agent):
         """Returns a function to update the agent on the result of the game"""
         self.history.append(result)
 
-    def update_state(self) -> None:
+    @abstractmethod
+    def update_state(self) -> tuple[list[Order], list[Order]]:
         pass
 
     def get_game_results(self) -> list[GameResultType]:
         return self.history
 
-    def _buy_order(
-        self, card_type: Card, limit_price: float
-    ) -> Order | None:
+    def _buy_order(self, card_type: Card, limit_price: float) -> Order | None:
         order = Order(
             order_type=OrderType.BUY,
             card_type=card_type,
@@ -92,13 +99,11 @@ class Player(Agent):
             order_UID=None,
             callback=None,
             agent_UID=self.UID,
-            executed= None
+            executed=None,
         )
         return order
 
-    def _sell_order(
-        self, card_type: Card, limit_price: float
-    ) -> Order | None:
+    def _sell_order(self, card_type: Card, limit_price: float) -> Order | None:
         order = Order(
             order_type=OrderType.SELL,
             card_type=card_type,
@@ -106,41 +111,50 @@ class Player(Agent):
             order_UID=None,
             callback=None,
             agent_UID=self.UID,
-            executed= None
+            executed=None,
         )
         return order
 
 
-class MutatorPlayer(Player):
+class PlayerMutator(Player):
     def __init__(self, uid, money=0.0, p: float = 1.0, seed_deck=seed_single_random()):
         super().__init__(uid, money, seed_deck)
         self.PlayerBehavior = PlayerBehavior.MUTATOR
 
-    def update_state(self) -> None:
+    def update_state(self) -> tuple[list[Order], list[Order]]:
         # sample the current deck for a card to mutate
         deck = list(self.deck)
         sample1 = rng_rand.choice(deck)
-        
+
         # find the set opposite of the selected card
         comp = self.deck.copy()
         comp.pop(sample1)
-        
+
         # sample the opposite set
         comp = list(comp)
         sample2 = rng_rand.choice(comp)
-        
-        self._sell_order(card_type=sample1, limit_price=1.0)
-        self._buy_order(card_type=sample2, limit_price=1.0)
+
+        buy_order = []
+        sell_order = []
+
+        buy_order.append(self._buy_order(card_type=sample2, limit_price=1.0))
+        sell_order.append(self._sell_order(card_type=sample1, limit_price=1.0))
+
+        orders = (buy_order, sell_order)
         # place a sell order to sell the first card
         # place a buy order to get the new card
-        return super().update_state()
+        return orders
 
 
-class CopycatPlayer(Player):
+class PlayerCopycat(Player):
     def __init__(self, uid, money=0.0, seed_deck=seed_single_random()):
         super().__init__(uid, money, seed_deck)
         self.PlayerBehavior = PlayerBehavior.COPYCAT
 
-    def update_state(self) -> None:
+    def update_state(self) -> tuple[list[Order], list[Order]]:
+        buy_order = []
+        sell_order = []
 
-        return super().update_state()
+        orders = (buy_order, sell_order)
+
+        return orders

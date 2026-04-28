@@ -11,8 +11,15 @@ from ..config import (
     SEED_DECK_WEIGHTS,
 )
 from ..agents.seeding import seed_weighted, SeedFunction, seed_single_random
-from ..models import AgentType, Order, TickSnapShot, GameResultType, Card, PlayerBehavior
-from ..agents import Agent, Player, Scalper, MutatorPlayer, CopycatPlayer
+from ..models import (
+    AgentType,
+    Order,
+    TickSnapShot,
+    GameResultType,
+    Card,
+    PlayerBehavior,
+)
+from ..agents import Agent, Player, Scalper, PlayerMutator, PlayerCopycat
 from ..games import Game, GameOneCard
 from ..market import Market
 from ..utils import logger
@@ -33,7 +40,7 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: dict[type[Player], int] = {CopycatPlayer: 1, MutatorPlayer:1},
+        player_type: dict[type[Player], int] = {PlayerCopycat: 1, PlayerMutator: 1},
         scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
@@ -166,6 +173,10 @@ class Simulation:
         card_prices = self.market.get_prices()
         for agent in self.players + self.scalpers:
             buy_orders, sell_orders = agent.wake_up_agent(card_prices)
+            if buy_orders and sell_orders:
+                logger.debug(
+                    f"{agent.agent_type.value} AGENT: ...{str(agent.UID)[-5:]}\nbuy_orders = {buy_orders[0].card_type.value} \nsell_orders = {sell_orders[0].card_type.value}"
+                )
 
         self._buy_orders = buy_orders
         self._sell_orders = sell_orders
@@ -193,24 +204,26 @@ class Simulation:
 
     def get_player(self, id: UUID) -> Agent | None:
         return self.players[int(id)]
-    
-    def get_player_populations(self, dtype: Literal["int" , "float"]) -> dict[PlayerBehavior, int|float]:
+
+    def get_player_populations(
+        self, dtype: Literal["int", "float"]
+    ) -> dict[PlayerBehavior, int | float]:
         player_pops_int = {behavior: 0 for behavior in PlayerBehavior}
         for player in self.players:
             pbehavior = player.PlayerBehavior
-            player_pops_int[pbehavior] +=1
-        
+            player_pops_int[pbehavior] += 1
+
         if dtype == "int":
             return player_pops_int
-        
+
         total = sum(list(player_pops_int.values()))
 
-        player_pops_float = {behavior:0.0 for behavior in PlayerBehavior}
+        player_pops_float = {behavior: 0.0 for behavior in PlayerBehavior}
 
         for k, v in player_pops_int.items():
-            player_pops_float[k] = v/total
+            player_pops_float[k] = v / total
 
-        return player_pops_float 
+        return player_pops_float
 
     def get_card_counts(self, agent_type: AgentType) -> dict[Card, int]:
         card_counts: dict[Card, int] = {card: 0 for card in Card}

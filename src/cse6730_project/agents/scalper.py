@@ -3,14 +3,14 @@ from typing import Callable
 from abc import abstractmethod
 from uuid import UUID, uuid4
 
-from ..models import Order, CardPrices, Card, OrderType
+from ..models import Order, CardPrices, Card, OrderType, AgentType
 from ..utils import rng_rand
 from .base import Agent
 
 
 class Scalper(Agent):
     def __init__(self, uid: UUID, money: float = 0.0):
-        super().__init__(uid, money)
+        super().__init__(uid, agent_type=AgentType.SCALPER, money=money)
 
     def wake_up_agent(self, card_prices: CardPrices) -> tuple[list[Order], list[Order]]:
         """create a list of orders with callbacks to update agent"""
