@@ -14,7 +14,7 @@ from ..models import (
     AgentType,
 )
 from .seeding import seed_single_random, SeedFunction
-from ..utils import rng_rand
+from ..utils import rng_rand, logger
 from .base import Agent
 
 
@@ -31,7 +31,7 @@ class Player(Agent):
     ):
         super().__init__(uid, agent_type=AgentType.PLAYER, money=money)
         self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
-        self.history: list[GameResultType] = []
+        self.history: list[tuple[GameResultType, UUID]] = []
         self._seed_fn = seed_deck
 
         seed_deck(self.deck)
@@ -80,7 +80,7 @@ class Player(Agent):
 
         return order
 
-    def update_game_results(self, result: GameResultType) -> None:
+    def update_game_results(self, result: tuple[GameResultType,UUID]) -> None:
         """Returns a function to update the agent on the result of the game"""
         self.history.append(result)
 
@@ -156,5 +156,9 @@ class PlayerCopycat(Player):
         sell_order = []
 
         orders = (buy_order, sell_order)
+        myUID = str(self.UID)
 
+        history = self.history
+        for h in history:
+            logger.debug(f"{myUID[-10:]} MY HISTORY : {h}\n")
         return orders

@@ -41,6 +41,13 @@ class GameResultType(Enum):
 
 
 @dataclass
+class GameResult:
+    GameResultValue : GameResultType
+    winner_UID : UUID
+    loser_UID : UUID
+    
+
+@dataclass
 class Order:
     agent_UID: UUID  # We might not need it it!
     order_type: OrderType

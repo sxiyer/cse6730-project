@@ -20,11 +20,11 @@ class GameOneCard(Game):
                 f"Player {player1.UID} Plays {card1} vs Player {player2.UID} plays {card2}, Player {self.winner.UID} Wins!"
             )
             if self.winner and self.loser:
-                self.winner.history.append(GameResultType.WIN)
-                self.loser.history.append(GameResultType.LOSS)
+                self.winner.history.append((GameResultType.WIN, self.loser.UID))
+                self.loser.history.append((GameResultType.LOSS, self.loser.UID))
         else:
-            player1.history.append(GameResultType.TIE)
-            player2.history.append(GameResultType.TIE)
+            player1.history.append((GameResultType.TIE, self.player2.UID))
+            player2.history.append((GameResultType.TIE, self.player1.UID))
 
         self.result = result
         self.rounds_played += 1

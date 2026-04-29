@@ -1,7 +1,7 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 
-from ..models import Card, GameResultType
+from ..models import Card, GameResultType, GameResult
 from ..config import PAYOFF
 from ..agents import Player
 

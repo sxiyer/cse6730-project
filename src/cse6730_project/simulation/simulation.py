@@ -68,6 +68,7 @@ class Simulation:
         self.num_scalpers: int = num_scalpers
         self.players: list[Player] = []
         self.scalpers: list[Scalper] = []
+        self.player_map: dict[str, Player] = {}
         self.market: Market | None = market
         self._current_tick: int = 0
         self._history: list = []
@@ -91,13 +92,15 @@ class Simulation:
         for player, population in player_type.items():
             ratio = (self.num_players * population) // denominator
             for _ in range(ratio):
+                pUID = UUID(int=(counter))
                 p: Player = player(
-                    uid=UUID(int=(counter)),
+                    uid=pUID,
                     money=PLAYER_STARTING_MONEY,
                     seed_deck=seed_weighted(SEED_DECK_WEIGHTS),
                 )
                 counter += 1
                 self.players.append(p)
+                self.player_map[str(pUID)] = p
 
         denominator = sum(scalper_type.values())
         # counter = 0 Don't resest the counter to have unique player and scalper ids
@@ -113,11 +116,11 @@ class Simulation:
     def _matchPlayers(
         self,
     ) -> None:
-        playersLower = self.players[0 : self.num_players // 2]
-        playersUpper = self.players[self.num_players // 2 :]
+        players = np.array(self.players)
+        self.rng_np.shuffle(players)
 
-        playersLower_arr = np.array(playersLower)
-        playersUpper_arr = np.array(playersUpper)
+        playersLower_arr = players[0 : self.num_players // 2]
+        playersUpper_arr = players[self.num_players // 2 :]
 
         self.rng_np.shuffle(playersUpper_arr)
 
@@ -126,6 +129,7 @@ class Simulation:
         self.matches = matches_arr
 
     def _buildGames(self) -> None:
+        self.games.clear()
         for match in self.matches:
             logger.debug(f"Building match at tick {self._current_tick}")
 
