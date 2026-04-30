@@ -1,14 +1,18 @@
 from dataclasses import dataclass
 from pathlib import Path
 import os
+import numpy as np
 
 from .models import Card, OdeConfig, TimeConfig
 
 
+NUM_PLAYERS = 1000
+NUM_SCALPERS = 2
+NUM_TICKS = 1000
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
 STARTING_BUDGET = 15.0
-MAX_DECK_SIZE = 9
+MAX_DECK_SIZE = 1
 BEST_OF = 5
 WINS_NEEDED = 3
 PRICE_HISTORY_LEN = 5
@@ -33,8 +37,15 @@ PAYOFF: dict[tuple[Card, Card], int] = {
     (Card.PAPER, Card.ROCK): 1,
 }
 
+PAYOFF_NP = np.array([
+    [0, -1, 1],
+    [1, 0, -1],
+    [-1, 1, 0]
+], dtype=float)
+
+
 SEED_DECK_WEIGHTS: dict[Card, float] = {
-    Card.ROCK: 1,
+    Card.ROCK: 2,
     Card.PAPER: 1,
     Card.SCISSOR: 1,
 }

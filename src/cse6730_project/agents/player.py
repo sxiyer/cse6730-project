@@ -3,6 +3,7 @@ from abc import abstractmethod
 from typing import Callable
 from uuid import UUID
 import random
+import numpy as np
 
 from ..models import (
     Card,
@@ -13,10 +14,19 @@ from ..models import (
     OrderType,
     AgentType,
 )
+
+from ..config import PAYOFF_NP
 from .seeding import seed_single_random, SeedFunction
 from ..utils import rng_rand, logger
 from .base import Agent
 
+def _deck_to_norm_vector(deck: dict[Card,int]) -> np.ndarray:
+    counts = np.array([deck.get(card,0) for card in list(Card)], dtype=float)
+    total = counts.sum()
+    
+    if total == 0:
+        return np.ones(3) / 3
+    return counts/total
 
 class Player(Agent):
     # TODO: Implement a generator function that will seed the player's deck that
@@ -31,7 +41,7 @@ class Player(Agent):
     ):
         super().__init__(uid, agent_type=AgentType.PLAYER, money=money)
         self.PlayerBehavior: PlayerBehavior = PlayerBehavior.NONE
-        self.history: list[tuple[GameResultType, UUID]] = []
+        self.history: list[tuple[GameResultType, UUID, dict[Card, int]]] = []
         self._seed_fn = seed_deck
 
         seed_deck(self.deck)
@@ -80,12 +90,12 @@ class Player(Agent):
 
         return order
 
-    def update_game_results(self, result: tuple[GameResultType,UUID]) -> None:
+    def update_game_results(self, result: tuple[GameResultType,UUID, dict[Card,int]]) -> None:
         """Returns a function to update the agent on the result of the game"""
         self.history.append(result)
 
     @abstractmethod
-    def update_state(self) -> tuple[list[Order], list[Order]]:
+    def update_state(self, card_counts: dict[Card, int]) -> tuple[list[Order], list[Order]]:
         pass
 
     def get_game_results(self) -> list[GameResultType]:
@@ -121,19 +131,27 @@ class PlayerMutator(Player):
         super().__init__(uid, money, seed_deck)
         self.PlayerBehavior = PlayerBehavior.MUTATOR
 
-    def update_state(self) -> tuple[list[Order], list[Order]]:
+    def update_state(self, card_counts: dict[Card, int]) -> tuple[list[Order], list[Order]]:
         # sample the current deck for a card to mutate
-        deck = list(self.deck)
-        sample1 = rng_rand.choice(deck)
+        owned_cards = [card for card, count in self.deck.items() if count > 0]
+        if not owned_cards:
+            return ([], [])
+
+        sample1 = rng_rand.choice(owned_cards)
 
         # find the set opposite of the selected card
-        comp = self.deck.copy()
-        comp.pop(sample1)
+        all_cards = list(Card)
+        comp = [card for card in all_cards if card != sample1]
 
         # sample the opposite set
-        comp = list(comp)
         sample2 = rng_rand.choice(comp)
 
+        self.deck[sample1] -= 1
+
+        if sample2 not in self.deck:
+            self.deck[sample2] = 0
+
+        self.deck[sample2] += 1
         buy_order = []
         sell_order = []
 
@@ -151,14 +169,24 @@ class PlayerCopycat(Player):
         super().__init__(uid, money, seed_deck)
         self.PlayerBehavior = PlayerBehavior.COPYCAT
 
-    def update_state(self) -> tuple[list[Order], list[Order]]:
+    def update_state(self, card_counts: dict[Card, int]) -> tuple[list[Order], list[Order]]:
         buy_order = []
         sell_order = []
 
+        d : np.ndarray = _deck_to_norm_vector(self.deck)
+        x : np.ndarray = _deck_to_norm_vector(card_counts)
         orders = (buy_order, sell_order)
         myUID = str(self.UID)
 
-        history = self.history
-        for h in history:
-            logger.debug(f"{myUID[-10:]} MY HISTORY : {h}\n")
+        last_history = self.history[-1]
+        last_game_result, last_opponent, last_deck = last_history
+
+        if last_game_result == GameResultType.LOSS:
+            logger.debug(f"I lost to {last_deck},\n changing my deck: {self.deck}")
+            self.deck = last_deck.copy()
+            logger.debug(f"{self.deck}")
+
+        logger.debug(f"{last_game_result}")
+        logger.debug(f"{GameResultType.LOSS}")
+        logger.debug(f"{myUID[-10:]} MY LAST HISTORY : {last_history}\n")
         return orders

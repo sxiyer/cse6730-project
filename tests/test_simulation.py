@@ -12,6 +12,7 @@ from cse6730_project.agents import Player
 from cse6730_project.ode.ode import OdeRPS
 from cse6730_project.visualization import ODEVisualizer
 from cse6730_project.market import Market, MarketCommon
+from cse6730_project.config import NUM_PLAYERS, NUM_SCALPERS, NUM_TICKS
 
 
 @pytest.fixture
@@ -25,7 +26,7 @@ def basicSimulation() -> Simulation:
     # Generate a distribution of players and scalpers
     rng_rand.seed(RNG_SEED)
     return Simulation(
-        market=None, num_players=100, num_scalpers=10, seed=RNG_SEED, num_ticks=3
+        market=None, num_players=NUM_PLAYERS, num_scalpers=NUM_SCALPERS, seed=RNG_SEED, num_ticks= NUM_TICKS
     )
 
 
@@ -42,23 +43,39 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
 class TestSimulation:
     def test_init(self, basicSimulation: Simulation) -> None:
         """
-        A basic simulation initializes with no market and 100 agents
+        A basic simulation initializes with no market and NUM_PLAYERS agents
         """
-        assert len(basicSimulation.players) == 100  # Check number of players
-        assert basicSimulation.players[69].UID == UUID(int=69)
-        assert len(basicSimulation.scalpers) == 10
+        assert len(basicSimulation.players) == NUM_PLAYERS  # Check number of players
+        assert basicSimulation.players[NUM_PLAYERS//2].UID == UUID(int=NUM_PLAYERS//2)
+        assert len(basicSimulation.scalpers) == NUM_SCALPERS
 
-    def test_run(self, basicSimulation) -> None:
+    def test_run(self, basicSimulation: Simulation, basicMarket: Market) -> None:
+        basicSimulation.market = basicMarket
+        logger.info("==================== BEFORE RUNNING ======================")
+
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        logger.info(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
+
         basicSimulation.run()
+
+        logger.info("==================== AFTER RUNNING ======================")
+
+        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
+        logger.info(f"Cards in posession of players: {cardcounts_players}")
+        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
+        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
+
         matchA = basicSimulation.matches[0][0].UID
         matchB = basicSimulation.matches[0][1].UID
         logger.info(
             f"Match at index 0 [player.UID, player.UID] = [{matchA} , {matchB}]"
         )
 
-        samplePlayer: Player = basicSimulation.players[11]
+        samplePlayer: Player = basicSimulation.players[0]
         logger.info(f"Sample Player: {samplePlayer.UID}")
-        logger.info(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
+        logger.debug(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
 
     def test_cardcounts(self, basicSimulation: Simulation) -> None:
         cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)

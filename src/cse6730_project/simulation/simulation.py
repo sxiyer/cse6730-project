@@ -40,7 +40,7 @@ class Simulation:
         num_scalpers: int = 0,
         num_ticks: int = 1,
         game_type: type[Game] = GameOneCard,
-        player_type: dict[type[Player], int] = {PlayerCopycat: 1, PlayerMutator: 1},
+        player_type: dict[type[Player], int] = {PlayerCopycat: 9, PlayerMutator: 1},
         scalper_type: dict[type[Scalper], int] = {Scalper: 1},
     ):
         """
@@ -79,6 +79,7 @@ class Simulation:
         self.game_type = game_type
         self._game_history = []
         self.rng_np = np.random.default_rng(seed=seed)
+        self._card_populations = dict[Card,float]
 
         if num_players < 2:
             raise ValueError("Number of players must be greater than or equal to 2!")
@@ -178,9 +179,10 @@ class Simulation:
         for agent in self.players + self.scalpers:
             buy_orders, sell_orders = agent.wake_up_agent(card_prices)
             if buy_orders and sell_orders:
-                logger.debug(
-                    f"{agent.agent_type.value} AGENT: ...{str(agent.UID)[-5:]}\nbuy_orders = {buy_orders[0].card_type.value} \nsell_orders = {sell_orders[0].card_type.value}"
-                )
+                # logger.debug(
+                #     f"{agent.agent_type.value} AGENT: ...{str(agent.UID)[-5:]}\nbuy_orders = {buy_orders[0].card_type.value} \nsell_orders = {sell_orders[0].card_type.value}"
+                # )
+                pass
 
         self._buy_orders = buy_orders
         self._sell_orders = sell_orders
@@ -248,6 +250,14 @@ class Simulation:
                 card_counts[key] += value
 
         return card_counts
+    def _compute_card_populations(self) -> None:
+        card_pop: dict[Card, float] = {card: 0 for card in Card}
+        card_counts = self.get_card_counts(AgentType.PLAYER)
+        total_cards = sum(card_counts.values())
+        for card, count in card_pop.items():
+            card_pop[card] = count/total_cards
+        
+        self._card_populations = card_pop
 
     def _recordState(self) -> None:
         """
