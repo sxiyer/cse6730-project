@@ -1,9 +1,18 @@
+from collections import defaultdict
 from dataclasses import replace
+from operator import neg
+from enum import Enum
 from uuid import UUID
-import bisect
+
+from sortedcontainers import SortedSet, SortedDict
 
 from ..models import Card, Order, OrderType, AgentType
 from . import Market
+
+
+class OrderStatus(Enum):
+    AVAILABLE = "AVAILABLE"
+    PENDING = "PENDING"
 
 
 class MarketCommon(Market):
@@ -56,53 +65,34 @@ class MarketCommon(Market):
             num_buy = len(self.buy_list)
             num_sell = len(self.sell_list)
 
-        visited: set = set()
-        recStack: list[bool] = [False] * (num_buy + num_sell)
+        dfs_stack: set = set()  # only used for players
 
         ## Create Mapping for Card types:
-        buy_orders_by_card: dict[Card, list[Order]] = {}
-        sell_orders_by_card: dict[Card, list[Order]] = {}
-        if self.buy_list and self.sell_list:
-            for order in self.buy_list:
-                if order.card_type not in buy_orders_by_card:
-                    buy_orders_by_card[order.card_type] = [order]
-                else:
-                    buy_orders_by_card[order.card_type].append(order)
-            for order in self.sell_list:
-                if order.card_type not in sell_orders_by_card:
-                    sell_orders_by_card[order.card_type] = [order]
-                else:
-                    sell_orders_by_card[order.card_type].append(order)
 
-        ## Sort the orders by limit_price
-        for _, orders in buy_orders_by_card.items():
-            orders.sort(key=lambda x: x.limit_price)
-        for _, orders in sell_orders_by_card.items():
-            orders.sort(key=lambda x: x.limit_price)
+        offers: dict[Card, SortedDict] = dict(
+            {
+                card: SortedDict(
+                    {
+                        OrderStatus.AVAILABLE: SortedSet(),
+                        OrderStatus.PENDING: SortedSet(),
+                    }
+                )
+                for card in Card
+            }
+        )
 
-        ## Creating mapping from agentID to its Orders
-        agents_orders: dict[UUID, tuple[list[Order], list[Order]]] = {}
-        ## agent.UID -> (buy-list, sell-list)
-        if self.buy_list and self.sell_list:
-            for order in self.buy_list:
-                if order.agent_UID not in agents_orders:
-                    agents_orders[order.agent_UID] = ([], [])
-                agents_orders[order.agent_UID][0].append(order)
-            for order in self.sell_list:
-                if order.agent_UID not in agents_orders:
-                    agents_orders[order.agent_UID] = ([], [])
-                agents_orders[order.agent_UID][1].append(order)
+        # Insert all of the offers
+        for offer in self.sell_list:
+            offers[offer.card_type][OrderStatus.AVAILABLE].add(offer)
+
+        ## Creating mapping from agentID to its bids by decreasing order
+        agents_bids: defaultdict[UUID, SortedSet] = defaultdict(
+            lambda: SortedSet(key=lambda order: (-order.limit_price, order.order_UID))
+        )
+        for order in self.buy_list:
+            agents_bids[order.agent_UID].add(order)
 
         ## Go through all agents and search for orders that meet their requiremnts
-        for agent_UID, agent_orders in agents_orders.items():
-            self._find_order(agent_UID, agent_orders, buy_orders_by_card, visited)
-
-        # TODO Fix transcation logic: it returns none!!
-        if self.buy_list and self.sell_list:
-            for order in self.buy_list:
-                replace(order, executed=False)
-            for order in self.sell_list:
-                replace(order, executed=False)
 
         # Reset the buy/sell lists
         self.sell_list = None
@@ -111,21 +101,102 @@ class MarketCommon(Market):
     def _find_order(
         self,
         agent_UID: UUID,
-        agent_orders: tuple[list[Order], list[Order]],
-        all_sell_orders: dict[Card, list[Order]],
-        visited: set,
+        agent_orders: defaultdict[UUID, SortedSet],
+        offers: dict[Card, SortedDict],
+        dfs_stack: set,
+        agent_type: AgentType,
     ) -> bool:
-        """The function searching for a buy/sell order that meets the card and limit_price requirement"""
-        if agent_UID in visited:
+        """The function searching for offers that meets the bid requirements"""
+
+        if agent_type == AgentType.PLAYER and agent_UID in dfs_stack:
+            dfs_stack.remove(agent_UID)
+            return True
+
+        ## Pop the highest bid
+        bid = agent_orders[agent_UID].pop()
+
+        ## Search the AVAILABLE offers
+        while offers[bid.card_type][OrderStatus.AVAILABLE]:
+            offer = offers[bid.card_type][OrderStatus.AVAILABLE][-1]
+            if (
+                bid.limit_price >= offer.limit_price
+                and bid.agent_UID != offer.agent_UID
+            ):
+                ## Remove offer from AVAILABLE set
+                offer = offers[bid.card_type][OrderStatus.AVAILABLE].pop()
+                ## Add offer to PENDING set
+                offers[bid.card_type][OrderStatus.PENDING].add(offer)
+                ## Add players to the stack set
+                if agent_type == AgentType.PLAYER:
+                    dfs_stack.add(agent_UID)
+
+                ## Try to execute the order
+                bought: bool = self._find_order(
+                    offer.agent_UID, agent_orders, offers, dfs_stack, offer.agent_type
+                )
+                ## Remove offer from PENDING
+                offers[bid.card_type][OrderStatus.PENDING].remove(offer)
+                if bought:
+                    ## Set the transaction as successful
+                    offer.executed = True
+                    ## Update the agent
+                    offer.callback()
+                    if agent_type == AgentType.PLAYER and agent_UID not in dfs_stack:
+                        return False
+                    else:
+                        return True
+                else:
+                    ## Set the transaction as failed
+                    offer.executed = False
+                    ## Updat the agent
+                    offer.callback()
+
+                    if agent_type == AgentType.PLAYER:
+                        return False
+                    else:
+                        return True
+
+        ## Check the PENDING offers
+        while offers[bid.card_type][OrderStatus.PENDING]:
+            offer = offers[bid.card_type][OrderStatus.PENDING][-1]
+            if (
+                bid.limit_price >= offer.limit_price
+                and bid.agent_UID != offer.agent_UID
+            ):
+                ## Remove offer from PENDING set
+                offer = offers[bid.card_type][OrderStatus.PENDING].pop()
+                ## Add players to the stack set
+                if agent_type == AgentType.PLAYER:
+                    dfs_stack.add(agent_UID)
+
+                ## Try to execute the order
+                bought: bool = self._find_order(
+                    offer.agent_UID, agent_orders, offers, dfs_stack, offer.agent_type
+                )
+                if bought:
+                    ## Set the transaction as successful
+                    offer.executed = True
+                    ## Update the agent
+                    offer.callback()
+                    if agent_type == AgentType.PLAYER and agent_UID not in dfs_stack:
+                        return False
+                    else:
+                        return True
+                else:
+                    ## Set the transaction as failed
+                    offer.executed = False
+                    ## Updat the agent
+                    offer.callback()
+
+                    if agent_type == AgentType.PLAYER:
+                        return False
+                    else:
+                        return True
+
+        if agent_type == AgentType.PLAYER:
             return False
-        agent_buy_orders = agent_orders[0]
-        for bid in agent_buy_orders:  # For all agent bids
-            for offer in all_sell_orders[bid.card_type]:  # For all offers
-                if bid.limit_price >= offer.limit_price:
-                    if offer.agent_type == AgentType.PLAYER:
-                        successful_execution = _find_order(
-                            offer.agent_UID,
-                        )
+        else:
+            return True
 
 
 class MarketSimple(Market):
