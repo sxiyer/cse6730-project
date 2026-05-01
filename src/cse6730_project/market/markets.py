@@ -1,31 +1,14 @@
-from ..models import Card, Order, OrderType, Transaction
+from dataclasses import replace
+
+from ..models import Card, Order, OrderType
 from . import Market
 
 
 class MarketCommon(Market):
     def __init__(self):
         super().__init__(name="common")
-        self.stock = {card: 1000 for card in Card}
-        self.prices = {card: 1.0 for card in Card}
 
-    def submit_order(self, order: Order) -> bool:
-        if order.order_type == OrderType.BUY:
-            # Accept buy if agent is willing to pay at least the current price
-            # and the market has enough stock
-            if (
-                order.quantity <= self.stock[order.card_type]
-                and order.limit_price >= self.prices[order.card_type]
-            ):
-                if self.buy_list:
-                    self.buy_list.append(order)
-                return True
-            return False
-        else:  # SELL
-            if self.sell_list:
-                self.sell_list.append(order)
-            return True
-
-    def clear(self) -> list[Transaction]:
+    def clear(self) -> None:
         """
         Process all queued orders per card type.
         - Execute accepted buys: deduct stock, record trade.
@@ -47,15 +30,57 @@ class MarketCommon(Market):
         # Also check if bid/ask prices are actually valid according to the
         # current values of cards. The market should match bids to asks
 
-        return []  # TODO Implement order execution logic
+        if not self.buy_list or not self.sell_list:
+            if self.buy_list:
+                for order in self.buy_list:
+                    replace(order, executed=False)
+            if self.sell_list:
+                for order in self.sell_list:
+                    replace(order, executed=False)
+
+        num_buy: int = 0
+        num_sell: int = 0
+        if self.buy_list and self.sell_list:
+            num_buy = len(self.buy_list)
+            num_sell = len(self.sell_list)
+
+        visited: list[bool] = [False] * (num_buy + num_sell)
+        recStack: list[bool] = [False] * (num_buy + num_sell)
+
+        ## Create Mapping for Card types:
+        buy_orders_by_card: dict[Card, list[Order]] = {}
+        sell_orders_by_card: dict[Card, list[Order]] = {}
+        if self.buy_list and self.sell_list:
+            for order in self.buy_list:
+                if order.card_type not in buy_orders_by_card:
+                    buy_orders_by_card[order.card_type] = [order]
+                else:
+                    buy_orders_by_card[order.card_type].append(order)
+            for order in self.sell_list:
+                if order.card_type not in sell_orders_by_card:
+                    sell_orders_by_card[order.card_type] = [order]
+                else:
+                    sell_orders_by_card[order.card_type].append(order)
+
+        for _, orders in buy_orders_by_card.items():
+            orders.sort(key=lambda x: x.limit_price)
+        for _, orders in sell_orders_by_card.items():
+            orders.sort(key=lambda x: x.limit_price)
+
+        # TODO Fix transcation logic: it returns none!!
+        if self.buy_list and self.sell_list:
+            for order in self.buy_list:
+                replace(order, executed=False)
+            for order in self.sell_list:
+                replace(order, executed=False)
+
+        self.sell_list = None
+        self.buy_list = None
+
+    def _find_order(self) -> None:
+        """The function searching for a buy/sell order that meets the card and limit_price requirement"""
 
 
 class MarketSimple(Market):
     def __init__(self):
         super().__init__(name="simple")
-        self.stock = {card: 1000 for card in Card}
-        self.prices = {card: 1.0 for card in Card}
-
-    def submit_order(self, order) -> bool:
-        # Any order is successful
-        return True
