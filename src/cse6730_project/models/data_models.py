@@ -4,7 +4,6 @@ from enum import Enum
 from uuid import UUID
 from pathlib import Path
 
-
 ##### Enums #####
 
 
@@ -52,6 +51,19 @@ class Order:
     agent_type: AgentType
     exchange_price: float = 0.0
     quantity: int = 1
+
+    def __hash__(self):
+        return hash(self.order_UID)
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Order):
+            return NotImplemented
+        return self.order_UID == value.order_UID
+
+    def __le__(self, other):
+        if not isinstance(other, Order):
+            return NotImplemented
+        return (self.limit_price, self.order_UID) < (other.limit_price, other.order_UID)
 
 
 @dataclass
