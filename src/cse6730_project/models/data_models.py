@@ -41,7 +41,7 @@ class GameResultType(Enum):
 
 
 @total_ordering
-@dataclass
+@dataclass(eq=False)
 class Order:
     agent_UID: UUID  # We might not need it it!
     order_type: OrderType
