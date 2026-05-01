@@ -10,9 +10,11 @@ from .base import Agent
 
 class Scalper(Agent):
     def __init__(self, uid: UUID, money: float = 0.0):
-        super().__init__(uid, money)
+        super().__init__(uid, agent_type=AgentType.SCALPER, money=money)
 
-    def wake_up_agent(self, card_prices: CardPrices) -> tuple[list[Order], list[Order]]:
+    def wake_up_agent(
+        self, card_prices: CardPrices, card_counts: dict[Card, int] = {}
+    ) -> tuple[list[Order], list[Order]]:
         """create a list of orders with callbacks to update agent"""
         buy_order = self._buy_order(card_prices)
         sell_order = self._sell_order(card_prices)
@@ -33,13 +35,11 @@ class Scalper(Agent):
 
         return order
 
-    @abstractmethod
     def _buy_order(self, card_prices: CardPrices) -> list[Order]:
-        pass
+        return list()
 
-    @abstractmethod
     def _sell_order(self, card_prices: CardPrices) -> list[Order]:
-        pass
+        return list()
 
 
 class Shadow(Scalper):

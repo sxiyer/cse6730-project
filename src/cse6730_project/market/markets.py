@@ -69,9 +69,9 @@ class MarketCommon(Market):
 
         ## Create Mapping for Card types:
 
-        offers: dict[Card, SortedDict] = dict(
+        offers: dict[Card, dict] = dict(
             {
-                card: SortedDict(
+                card: dict(
                     {
                         OrderStatus.AVAILABLE: SortedSet(),
                         OrderStatus.PENDING: SortedSet(),
@@ -86,9 +86,7 @@ class MarketCommon(Market):
             offers[offer.card_type][OrderStatus.AVAILABLE].add(offer)
 
         ## Creating mapping from agentID to its bids by decreasing order
-        agents_bids: defaultdict[UUID, SortedSet] = defaultdict(
-            lambda: SortedSet(key=lambda order: (-order.limit_price, order.order_UID))
-        )
+        agents_bids: defaultdict[UUID, SortedSet] = defaultdict(lambda: SortedSet())
         for order in self.buy_list:
             agents_bids[order.agent_UID].add(order)
 

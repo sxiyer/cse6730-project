@@ -1,5 +1,5 @@
 from functools import total_ordering
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 from enum import Enum
 from uuid import UUID
@@ -37,17 +37,29 @@ class GameResultType(Enum):
     TIE = "tie"  # tie
 
 
+class FitnessModes(Enum):
+    EXPECTED = "expected"
+    EMPERICAL = "emperical"
+
+
 ##### Data Classes #####
+
+
+@dataclass
+class GameResult:
+    GameResultValue: GameResultType
+    winner_UID: UUID
+    loser_UID: UUID
 
 
 @total_ordering
 @dataclass(eq=False)
 class Order:
-    agent_UID: UUID  # We might not need it it!
+    agent_UID: UUID
     order_type: OrderType
     card_type: Card
     limit_price: float
-    order_UID: UUID  # We might not need it!
+    order_UID: UUID
     callback: Callable | None
     executed: bool | None
     agent_type: AgentType
@@ -104,11 +116,11 @@ class OdeConfig:
 @dataclass
 class TickSnapShot:
     tick: int
-    card_prices: CardPrices
-    order_volume: dict
-    top_twenty_players: list[UUID]  # Sorted in decreasing order
-    top_twenty_scalper: list[UUID]  # Sorted in decreasing order
-    # TODO collect info by agent type e.i. the top performing scalper class
+    card_populations: dict  # dict[Card, float]
+    card_prices: CardPrices | None = None
+    order_volume: dict | None = None
+    top_twenty_players: list[UUID] = field(default_factory=list)
+    top_twenty_scalper: list[UUID] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

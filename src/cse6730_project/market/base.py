@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import copy
 
 from ..models import Order, Card, CardPrices
+from ..utils import rng_rand
 
 
 class Market(ABC):
@@ -35,9 +36,7 @@ class Market(ABC):
         return {card: self.stock[card] * self.prices[card] for card in Card}
 
     def shuffleOrder(self) -> None:
-        import random
-
         if self.buy_list:
-            random.shuffle(self.buy_list)
+            rng_rand.shuffle(self.buy_list)
         if self.sell_list:
-            random.shuffle(self.sell_list)
+            rng_rand.shuffle(self.sell_list)
