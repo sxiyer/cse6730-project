@@ -20,11 +20,19 @@ class GameOneCard(Game):
                 f"Player {player1.UID} Plays {card1} vs Player {player2.UID} plays {card2}, Player {self.winner.UID} Wins!"
             )
             if self.winner and self.loser:
-                self.winner.history.append((GameResultType.WIN, self.loser.UID, self.loser.deck))
-                self.loser.history.append((GameResultType.LOSS, self.winner.UID, self.winner.deck))
+                self.winner.history.append(
+                    (GameResultType.WIN, self.loser.UID, self.loser.deck.copy())
+                )
+                self.loser.history.append(
+                    (GameResultType.LOSS, self.winner.UID, self.winner.deck.copy())
+                )
         else:
-            player1.history.append((GameResultType.TIE, self.player2.UID, self.player2.deck))
-            player2.history.append((GameResultType.TIE, self.player1.UID, self.player1.deck))
+            player1.history.append(
+                (GameResultType.TIE, self.player2.UID, self.player2.deck.copy())
+            )
+            player2.history.append(
+                (GameResultType.TIE, self.player1.UID, self.player1.deck.copy())
+            )
 
         self.result = result
         self.rounds_played += 1
@@ -74,16 +82,24 @@ class GameNineCard(Game):
         if wins1 == 3 or wins2 == 3:
             # self.winner/loser already set by the final resolveRPS call
             if self.winner and self.loser:
-                self.winner.history.append(GameResultType.WIN)
-                self.loser.history.append(GameResultType.LOSS)
+                self.winner.history.append(
+                    (GameResultType.WIN, self.loser.UID, self.loser.deck.copy())
+                )
+                self.loser.history.append(
+                    (GameResultType.LOSS, self.winner.UID, self.winner.deck.copy())
+                )
                 logger.debug(f"Game over: P{self.winner.UID} wins ({wins1}-{wins2})")
             self.result = GameResultType.WIN
         else:
             # deck exhaustion before either player reached 3
             self.winner = None
             self.loser = None
-            player1.history.append(GameResultType.TIE)
-            player2.history.append(GameResultType.TIE)
+            player1.history.append(
+                (GameResultType.TIE, self.player2.UID, self.player2.deck.copy())
+            )
+            player2.history.append(
+                (GameResultType.TIE, self.player1.UID, self.player1.deck.copy())
+            )
             logger.debug(f"Game over: Draw by exhaustion ({wins1}-{wins2})")
             self.result = GameResultType.TIE
 

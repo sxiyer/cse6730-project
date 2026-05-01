@@ -9,5 +9,6 @@ from .data_models import (
     CardPrices,
     TickSnapShot,
     GameResultType,
-    GameResult
+    GameResult,
+    FitnessModes,
 )

@@ -64,7 +64,7 @@ class OdeRPS:
         self.d_paper = N_paper / N_ALL_CARDS
         self.d_scissors = N_scissors / N_ALL_CARDS
 
-        self.initial_pop = [self.d_rock, self.d_paper, self.d_scissors]
+        self.initial_pop = [self.d_rock, self.d_scissors, self.d_paper]
         logger.debug(f"Initial pops {self.initial_pop}")
 
     def diff_eqn_szolnoki(self, t: float, y: np.ndarray):

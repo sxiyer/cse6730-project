@@ -3,19 +3,20 @@ from pathlib import Path
 import os
 import numpy as np
 
-from .models import Card, OdeConfig, TimeConfig
+from .models import Card, OdeConfig, TimeConfig, FitnessModes
 
 
-NUM_PLAYERS = 1000
+NUM_PLAYERS = 500
 NUM_SCALPERS = 2
-NUM_TICKS = 1000
+NUM_TICKS = 5000
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
 STARTING_BUDGET = 15.0
-MAX_DECK_SIZE = 1
+MAX_DECK_SIZE = 9
 BEST_OF = 5
 WINS_NEEDED = 3
 PRICE_HISTORY_LEN = 5
+
 
 ROOT: Path = Path(__file__).parent
 
@@ -26,7 +27,7 @@ LINES = 10
 os.environ["COLUMNS"] = str(COLUMNS)
 os.environ["LINES"] = str(LINES)
 
-RNG_SEED = 440
+RNG_SEED = 442
 
 PLAYER_STARTING_MONEY = 10.0
 SCALPER_STARTING_MONEY = 10.0
@@ -37,16 +38,15 @@ PAYOFF: dict[tuple[Card, Card], int] = {
     (Card.PAPER, Card.ROCK): 1,
 }
 
-PAYOFF_NP = np.array([
-    [0, -1, 1],
-    [1, 0, -1],
-    [-1, 1, 0]
-], dtype=float)
+PAYOFF_NP = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+
+FIT_WINDOW_SIZE = 50
+FIT_MODE = FitnessModes.EXPECTED
 
 
 SEED_DECK_WEIGHTS: dict[Card, float] = {
-    Card.ROCK: 2,
-    Card.PAPER: 1,
+    Card.ROCK: 5,
+    Card.PAPER: 2,
     Card.SCISSOR: 1,
 }
 
@@ -56,14 +56,16 @@ SEED_DECK_WEIGHTS: dict[Card, float] = {
 
 ODE_PARAMS = OdeConfig(
     z=1.1,
-    mu=0.02,
+    mu=0.01,
     t_interval=TimeConfig(start=0, end=10),
     t_eval=TimeConfig(start=0, end=10, step=10),
 )
 
+ODE_SCALE = 16.0
+
 
 # Visualization configs
-VIZ_DIRS = ["plots/", "plots/ode"]
+VIZ_DIRS = ["plots/", "plots/ode", "plots/sim"]
 
 
 @dataclass(frozen=True)

@@ -1,2 +1,2 @@
 from .base import Game
-from .games import GameOneCard
+from .games import GameOneCard, GameNineCard
