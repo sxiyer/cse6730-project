@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from functools import total_ordering
+from dataclasses import dataclass
 from typing import Callable
 from enum import Enum
 from uuid import UUID
@@ -39,6 +40,7 @@ class GameResultType(Enum):
 ##### Data Classes #####
 
 
+@total_ordering
 @dataclass
 class Order:
     agent_UID: UUID  # We might not need it it!
@@ -60,7 +62,7 @@ class Order:
             return NotImplemented
         return self.order_UID == value.order_UID
 
-    def __le__(self, other):
+    def __lt__(self, other):
         if not isinstance(other, Order):
             return NotImplemented
         return (self.limit_price, self.order_UID) < (other.limit_price, other.order_UID)
