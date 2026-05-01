@@ -1,4 +1,5 @@
-from uuid import UUID
+from typing import Callable
+from uuid import UUID, uuid4
 
 import random
 import pytest
@@ -39,6 +40,39 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
     )
 
 
+@pytest.fixture
+def simpleOrders(callback: Callable) -> tuple[list[Order], list[Order]]:
+    """Generate 10 buy and sell orders of each card. The bid price > offer price"""
+    orders: tuple[list[Order], list[Order]] = ([], [])
+
+    for _ in range(10):
+        ## Create 10 bids for the same card
+        bid = Order(
+            uuid4(),
+            OrderType.BUY,
+            Card.ROCK,
+            2,
+            uuid4(),
+            callback,
+            None,
+            AgentType.PLAYER,
+        )
+        offer = Order(
+            uuid4(),
+            OrderType.SELL,
+            Card.ROCK,
+            1,
+            uuid4(),
+            callback,
+            None,
+            AgentType.PLAYER,
+        )
+        orders[0].append(bid)
+        orders[1].append(offer)
+
+    return orders
+
+
 class TestSimulation:
     def test_init(self, basicSimulation: Simulation) -> None:
         """
@@ -66,22 +100,11 @@ class TestSimulation:
         cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
         logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
 
-    def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
-        logger.info(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
-        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-        odeSol = basicODERPS.SolveODE()
-        logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
-        logger.debug(f"{odeSol.y}")
-
-        logger.info("Plotting ODE...")
-        ODEViz = ODEVisualizer()
-        ODEViz.save_fig_ode(odeSol.t, odeSol.y, simparams=None)
-
 
 class TestMakert:
-    def test_market(self, basicMarket: Market) -> None:
+    def test_market_clear(
+        self, basicMarket: Market, simpleOrders: tuple[list[Order], list[Order]]
+    ) -> None:
         # Generate a list of sell and buy orders
-        sell_orders = []
-        buy_orders = []
+        bids, offers = simpleOrders
+        basicMarket.insert_orders(bids, offers)

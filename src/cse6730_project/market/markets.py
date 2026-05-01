@@ -170,7 +170,7 @@ class MarketCommon(Market):
                     dfs_stack.add(agent_UID)
 
                 ## Try to execute the order
-                bought: bool = self._find_order(
+                bought = self._find_order(
                     offer.agent_UID, agent_orders, offers, dfs_stack, offer.agent_type
                 )
                 if bought:
