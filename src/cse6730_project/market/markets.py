@@ -115,8 +115,6 @@ class MarketCommon(Market):
     ) -> bool:
         """The function searching for offers that meets the bid requirements"""
 
-        logger.info(f"Executing agent: {agent_UID}")
-
         if agent_type == AgentType.PLAYER and agent_UID in dfs_stack:
             dfs_stack.remove(agent_UID)
             return True
