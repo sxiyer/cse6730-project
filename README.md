@@ -1,8 +1,8 @@
 | Rock x Paper x Scissors - Agent-Based Market Simulation |
 |:----:|
-| ![UI](figures/output.gif) |
+| ![Simulation Output](plots/ode/20260501_212418_01.png) |
 
-# CSE6730 Final Project
+# CSE6730 Final Project - Rock, Paper, Scissors, Scalpers
 
 ## Group 10
 
@@ -22,56 +22,95 @@
 
 --- 
 
-### 📺 Project Description
+### Project Description
 
-In this project, we will implement a **Rock-Paper-Scissors (RPS)** game simulation. The simulation will involve multiple agents playing against each other. There will be two types of agents: **players** and **scalpers**. Players will play against each other. Scalpers will act as intermediaries who profit from discrepancies in card values or high-demand card shortages. The _objective_ of **players** is `to win as much games as possible`. **Scalpers** main _goal_ is to predict the future value of cards and buy and sell them `to make a profit`. In this simulation, cards can be traded for points (the currency of the game). Players and Scalpers can use their points to buy and sell cards. The game will be played in rounds, and at the end of each round, the player that won will receive one point.
+In this project, we implement a **Rock-Paper-Scissors (RPS)** game simulation. The simulation involves multiple agents playing against each other. There are two types of agents: **players** and **scalpers**. Players compete against each other while scalpers act as intermediaries who profit from discrepancies in card values or high-demand card shortages. The _objective_ of **players** is `to win as many games as possible`. **Scalpers** aim to predict future card values and buy/sell them `to make a profit`. Cards can be traded for points (the currency of the game), and both players and scalpers use points to buy and sell cards. The game is played in rounds; the player who wins a round receives one point.
 
-### 🕹️ Game Rules
+### Game Rules
 
-1. Each player starts with a deck of 9 cards, consisting of randomly generated combinations of rock, paper, and scissors. There will be a even number of players.
+1. Each player starts with a deck of 9 cards consisting of randomly generated combinations of rock, paper, and scissors. There will be an even number of players.
 
 2. Each round, two players are randomly selected to play against each other.
 
-3. Each player will randomly shuffle their deck and select the top card to play against their opponent. A card can't be reused in the same round, but it can be used in future rounds.
+3. Each player randomly shuffles their deck and selects the top card to play. A card cannot be reused in the same round but can be used in future rounds.
 
-4. The first player to win 3 rounds wins the game. The winner of each round receives one point.
+4. The first player to win 3 sub-rounds wins the game. The winner receives one point.
 
-5. After each game, players can use their points to buy new cards from a card market. The card market will have a limited number of cards available, and the price of each card will fluctuate based on supply and demand.
+5. After each game, players can use their points to buy new cards from a card market. Card prices fluctuate based on supply and demand.
 
 --- 
 
-### Setup Instructions:
+### Setup Instructions
 
-1. Need to have `Python 3.12`.
-
-2. Create a virtual environment.
-
-3. Run the following command from the project's root dir to install the required dependencies:
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) (fast Python package manager):
 
 ```bash
-pip install .
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+2. Install dependencies from the project root (uv creates a virtual environment automatically):
+
+```bash
+uv sync
+```
+
+3. To add or update packages:
+
+```bash
+uv add <package>       # add a dependency
+uv remove <package>    # remove a dependency
+```
+
+4. Prefix any command with `uv run` to execute it inside the managed environment without manually activating it:
+
+```bash
+uv run python -m cse6730_project
 ```
 
 --- 
 
 ### Running the Simulation
 
-| Prompt | Description |
-|:-------|:------------|
-| Number of players | Must be even |
-| Enable scalpers | `y/n` |
-| Pairing mode | Random or deterministic `y/n` |
-| Step size | Rounds per `SPACE` press |
+```bash
+uv run python -m cse6730_project
+```
 
-**Controls during simulation:**
+--- 
 
-| Key | Action |
-|:----|:-------|
-| `SPACE` | Advance to next round |
-| `🔼` / `🔽` | Adjust parameters on setup screens |
-| `Q` | Quit and save results |
+### Running Tests
 
-Results are saved to `results/` after the session ends.
+Run the full test suite:
+
+```bash
+uv run pytest tests/
+```
+
+Run each test file individually:
+
+```bash
+uv run pytest tests/test_simulation.py
+uv run pytest tests/test_error_estimation.py
+uv run pytest tests/test_ode_solver_timing.py
+uv run pytest tests/test_plots.py
+```
+
+Run a single test by name:
+
+```bash
+uv run pytest tests/test_simulation.py::TestSimulation::test_init
+uv run pytest tests/test_simulation.py::TestSimulation::test_run
+uv run pytest tests/test_simulation.py::TestSimulation::test_cardcounts
+uv run pytest tests/test_simulation.py::TestSimulation::test_ode
+uv run pytest tests/test_simulation.py::TestSimulation::test_market_interactions
+uv run pytest tests/test_simulation.py::TestMakert::test_market
+uv run pytest tests/test_error_estimation.py::test_normalised_rmse_per_card
+uv run pytest tests/test_error_estimation.py::test_normalised_mae_per_card
+uv run pytest tests/test_error_estimation.py::test_error_plot
+uv run pytest tests/test_error_estimation.py::test_per_card_error_summary
+uv run pytest tests/test_ode_solver_timing.py::test_solver_timing_smoke
+uv run pytest tests/test_plots.py::test_ode_plot
+uv run pytest tests/test_plots.py::test_comparison_plot
+```
 
 --- 
 
@@ -80,8 +119,8 @@ Results are saved to `results/` after the session ends.
 ```txt
 cse6730-project/
 ├── figures/
-│   ├── output.gif
-│   └── ui.mov
+├── plots/
+│   └── public/
 ├── INSTRUCTIONS.md
 ├── pyproject.toml
 ├── pyrightconfig.json
@@ -116,18 +155,29 @@ cse6730-project/
 │       ├── simulation/
 │       │   ├── __init__.py
 │       │   └── simulation.py
-│       ├── ui/
-│       │   ├── __init__.py
-│       │   ├── app.py
-│       │   ├── layouts.py
-│       │   └── states.py
 │       ├── utils.py
 │       └── visualization.py
-├── temp
-├── tests/
-│   └── test_simulation.py
-└── uv.lock
+└── tests/
+    ├── test_error_estimation.py
+    ├── test_ode_solver_timing.py
+    ├── test_plots.py
+    ├── test_simulation.py
+    └── validation.py
 ```
+
+--- 
+
+### AI Statement
+
+1. OpenAI ChatGPT was used for finding and aggregating relevant research papers. It was also used for formatting bib references. All papers listed were read and distilled into the literature review by a human.
+2. Anthropic Claude was used for generating UML diagrams based on human descriptions and code references.
+3. Anthropic Claude was used to generate unit tests by scanning the codebase. All produced code was thoroughly reviewed by a human.
+4. Anthropic Claude was used to run the scalper code 20 times and aggregate the results.
+5. Anthropic Claude was used for generating plotting/visualization code and error estimation code.
+6. Anthropic Claude was used to style and comment code to enable easy comprehension by other teammates.
+7. GPT 5.3 was used for LaTeX formatting and language editing.
+8. Antropic Claude Wrote this Readme :)
+---
 
 <div align="center">
 <sub>CSE 6730 · Modeling & Simulation x Georgia Institute of Technology x Spring 2026</sub>
