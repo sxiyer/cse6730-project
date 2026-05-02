@@ -64,7 +64,7 @@ ODE_SCALE = 16.0
 
 
 # Visualization configs
-VIZ_DIRS = ["plots/", "plots/ode", "plots/sim"]
+VIZ_DIRS = ["plots/", "plots/ode", "plots/sim", "plots/error"]
 
 
 @dataclass(frozen=True)
