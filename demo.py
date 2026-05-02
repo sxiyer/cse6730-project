@@ -1,5 +1,5 @@
 """
-Demo script: runs the RPS market simulation with NaiveGambler, Shadow, and QuickGrabber scalpers.
+Demo script: runs the RPS market simulation with all four scalper types.
 
 Usage (from repo root):
     python demo.py
@@ -7,7 +7,7 @@ Usage (from repo root):
 
 from src.cse6730_project.simulation import Simulation
 from src.cse6730_project.market.markets import MarketCommon
-from src.cse6730_project.agents import NaiveGambler, Shadow, QuickGrabber
+from src.cse6730_project.agents import NaiveGambler, Shadow, QuickGrabber, MarketMaker
 from src.cse6730_project.models import Card
 from src.cse6730_project.games import GameResultType
 from src.cse6730_project.utils import rng_rand
@@ -16,7 +16,8 @@ NUM_PLAYERS = 4
 NUM_NAIVE_GAMBLERS = 2
 NUM_SHADOWS = 2
 NUM_QUICK_GRABBERS = 2
-NUM_SCALPERS = NUM_NAIVE_GAMBLERS + NUM_SHADOWS + NUM_QUICK_GRABBERS
+NUM_MARKET_MAKERS = 2
+NUM_SCALPERS = NUM_NAIVE_GAMBLERS + NUM_SHADOWS + NUM_QUICK_GRABBERS + NUM_MARKET_MAKERS
 NUM_TICKS = 15
 SCALPER_BUDGET = 10.0
 
@@ -28,7 +29,8 @@ rng_rand.seed(SEED)
 _SCALPER_SUMMARY = (
     f"{NUM_NAIVE_GAMBLERS} NaiveGambler, "
     f"{NUM_SHADOWS} Shadow, "
-    f"{NUM_QUICK_GRABBERS} QuickGrabber"
+    f"{NUM_QUICK_GRABBERS} QuickGrabber, "
+    f"{NUM_MARKET_MAKERS} MarketMaker"
 )
 
 market = MarketCommon()
@@ -40,6 +42,7 @@ sim = Simulation(
         NaiveGambler: NUM_NAIVE_GAMBLERS,
         Shadow: NUM_SHADOWS,
         QuickGrabber: NUM_QUICK_GRABBERS,
+        MarketMaker: NUM_MARKET_MAKERS,
     },
     num_ticks=NUM_TICKS,
     seed=SEED,
@@ -48,14 +51,18 @@ sim = Simulation(
 for s in sim.scalpers:
     s.money = SCALPER_BUDGET
 
+
 def _label(s):
     if isinstance(s, NaiveGambler):
         prefix = "NG"
     elif isinstance(s, Shadow):
         prefix = "SH"
-    else:
+    elif isinstance(s, QuickGrabber):
         prefix = "QG"
+    else:
+        prefix = "MM"
     return f"{prefix}-{str(s.UID)[-4:]}"
+
 
 scalper_labels = {s.UID: _label(s) for s in sim.scalpers}
 

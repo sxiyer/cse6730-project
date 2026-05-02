@@ -281,6 +281,104 @@ class QuickGrabber(Scalper):
         return None
 
 
+class MarketMaker(Scalper):
+    """
+    Fixed-spread scalper.
+
+    Buys the card with the largest single-tick price decline (best mean-reversion
+    candidate) and holds until the price recovers by 'spread', drops by 'spread'
+    below entry (stop-loss), or max_hold_ticks is reached.  Carries at most one
+    position at a time.
+
+    Entry: on each tick with no open position, buy the card whose price fell the
+    most since the previous tick.  Skip the very first tick (no reference yet).
+
+    Exit (priority order):
+      1. Profit target — sell when price >= entry_price * (1 + spread).
+      2. Stop-loss    — sell when price <= entry_price * (1 - spread).
+      3. Forced exit  — sell after max_hold_ticks regardless.
+    """
+
+    def __init__(
+        self,
+        uid: UUID,
+        money: float = 0.0,
+        spread: float = 0.04,
+        max_hold_ticks: int = 8,
+    ):
+        super().__init__(uid, money)
+        self.spread = spread
+        self.max_hold_ticks = max_hold_ticks
+        self._last_prices: dict[Card, float] = {}
+        # (card, tick_bought, entry_price) — None when flat
+        self._position: tuple[Card, int, float] | None = None
+        self._current_tick: int = 0
+
+    def wake_up_agent(self, card_prices: CardPrices):
+        buy_order = self.buy_order(card_prices)
+        sell_order = self.sell_order(card_prices)
+
+        def update_agent(successful: bool, exchanged_prices) -> None:
+            if successful and buy_order:
+                self.deck[buy_order.card_type] += buy_order.quantity
+                self.money -= exchanged_prices[buy_order.card_type] * buy_order.quantity
+                self._position = (
+                    buy_order.card_type,
+                    self._current_tick,
+                    exchanged_prices[buy_order.card_type],
+                )
+            if successful and sell_order:
+                self.deck[sell_order.card_type] -= sell_order.quantity
+                self.money += exchanged_prices[sell_order.card_type] * sell_order.quantity
+
+        return (buy_order, sell_order, update_agent)
+
+    def buy_order(self, card_prices: CardPrices) -> Order | None:
+        """Buy the card that dropped the most since last tick."""
+        self._current_tick += 1
+
+        if self._position is not None:
+            self._last_prices = {card: card_prices[card] for card in Card}
+            return None
+
+        if not self._last_prices:
+            # No reference yet — record prices and wait one tick.
+            self._last_prices = {card: card_prices[card] for card in Card}
+            return None
+
+        best_card = max(Card, key=lambda c: self._last_prices[c] - card_prices[c])
+        self._last_prices = {card: card_prices[card] for card in Card}
+        return Order(
+            agent_UID=self.UID,
+            order_type=OrderType.BUY,
+            card_type=best_card,
+            limit_price=card_prices[best_card],
+        )
+
+    def sell_order(self, card_prices: CardPrices) -> Order | None:
+        """Exit at spread profit, spread stop-loss, or max_hold_ticks."""
+        if self._position is None:
+            return None
+        card, tick_bought, entry_price = self._position
+        if self.deck[card] <= 0:
+            self._position = None
+            return None
+        current = card_prices[card]
+        if current >= entry_price * (1 + self.spread):
+            self._position = None
+            return Order(agent_UID=self.UID, order_type=OrderType.SELL,
+                         card_type=card, limit_price=current)
+        if current <= entry_price * (1 - self.spread):
+            self._position = None
+            return Order(agent_UID=self.UID, order_type=OrderType.SELL,
+                         card_type=card, limit_price=current)
+        if self._current_tick - tick_bought >= self.max_hold_ticks:
+            self._position = None
+            return Order(agent_UID=self.UID, order_type=OrderType.SELL,
+                         card_type=card, limit_price=current)
+        return None
+
+
 class NaiveGambler(Scalper):
     """
     Baseline scalper. Buys and sells cards randomly with no regard for price or demand.
