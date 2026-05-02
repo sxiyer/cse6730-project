@@ -1,6 +1,6 @@
 | Rock x Paper x Scissors - Agent-Based Market Simulation |
 |:----:|
-| ![Simulation Output](plots/ode/20260501_212418_01.png) |
+| ![Simulation Output](plots/public/ode/rps_ode.png) |
 
 # CSE6730 Final Project - Rock, Paper, Scissors, Scalpers
 
