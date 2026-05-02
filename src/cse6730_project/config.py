@@ -8,7 +8,7 @@ from .models import Card, OdeConfig, TimeConfig, FitnessModes
 
 NUM_PLAYERS = 500
 NUM_SCALPERS = 2
-NUM_TICKS = 5000
+NUM_TICKS = 10000
 INITIAL_SUPPLY = 1000
 INITIAL_PRICE = 1.0
 STARTING_BUDGET = 15.0
@@ -65,7 +65,7 @@ ODE_SCALE = 16.0
 
 
 # Visualization configs
-VIZ_DIRS = ["plots/", "plots/ode", "plots/sim"]
+VIZ_DIRS = ["plots/", "plots/ode", "plots/sim", "plots/error"]
 
 
 @dataclass(frozen=True)
