@@ -1,5 +1,7 @@
 from typing import Callable
 from uuid import UUID, uuid4
+from dataclasses import replace
+from functools import wraps
 
 import random
 import pytest
@@ -46,115 +48,83 @@ def basicODERPS(basicSimulation: Simulation) -> OdeRPS:
 
 
 @pytest.fixture
-def simpleOrders(callback: Callable) -> tuple[list[Order], list[Order]]:
+def SimpleOrders() -> tuple[list[Order], list[Order]]:
     """Generate 10 buy and sell orders of each card. The bid price > offer price"""
     orders: tuple[list[Order], list[Order]] = ([], [])
 
-    for _ in range(10):
-        ## Create 10 bids for the same card
-        bid = Order(
-            uuid4(),
-            OrderType.BUY,
-            Card.ROCK,
-            2,
-            uuid4(),
-            callback,
-            None,
-            AgentType.PLAYER,
-        )
-        offer = Order(
-            uuid4(),
-            OrderType.SELL,
-            Card.ROCK,
-            1,
-            uuid4(),
-            callback,
-            None,
-            AgentType.PLAYER,
-        )
-        orders[0].append(bid)
-        orders[1].append(offer)
+    for card in Card:
+        for label in range(40):
+            ## Create 10 bids for the same card
+            bid_holder: list[Order] = []
+            offer_holder: list[Order] = []
+
+            def bid_callback(bid_holder=bid_holder) -> int:
+                bid = bid_holder[0]
+                if bid.executed:
+                    return 1
+                elif bid.executed is None:
+                    return -10
+                return -1
+
+            def offer_callback(offer_holder=offer_holder) -> int:
+                offer = offer_holder[0]
+                if offer.executed:
+                    return 1
+                elif offer.executed is None:
+                    return -10
+                return -1
+
+            bid = replace(
+                Order(
+                    UUID(int=label),
+                    OrderType.BUY,
+                    card,
+                    2,
+                    uuid4(),
+                    None,
+                    None,
+                    AgentType.SCALPER,
+                ),
+                callback=bid_callback,
+            )
+            offer = replace(
+                Order(
+                    UUID(int=label),
+                    OrderType.SELL,
+                    card,
+                    1,
+                    uuid4(),
+                    None,
+                    None,
+                    AgentType.SCALPER,
+                ),
+                callback=offer_callback,
+            )
+
+            bid_holder.append(bid)
+            offer_holder.append(offer)
+
+            orders[0].append(bid)
+            orders[1].append(offer)
 
     return orders
 
 
-class TestSimulation:
-    def test_init(self, basicSimulation: Simulation) -> None:
-        """
-        A basic simulation initializes with no market and NUM_PLAYERS agents
-        """
-        assert len(basicSimulation.players) == NUM_PLAYERS  # Check number of players
-        assert basicSimulation.players[NUM_PLAYERS // 2].UID == UUID(
-            int=NUM_PLAYERS // 2
-        )
-        assert len(basicSimulation.scalpers) == NUM_SCALPERS
-
-    def test_run(self, basicSimulation: Simulation, basicMarket: Market) -> None:
-        basicSimulation.market = basicMarket
-        logger.info("==================== BEFORE RUNNING ======================")
-
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
-        logger.info(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
-        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-
-        basicSimulation.run()
-
-        logger.info("==================== AFTER RUNNING ======================")
-
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
-        logger.info(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
-        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-
-        matchA = basicSimulation.matches[0][0].UID
-        matchB = basicSimulation.matches[0][1].UID
-        logger.info(
-            f"Match at index 0 [player.UID, player.UID] = [{matchA} , {matchB}]"
-        )
-
-        samplePlayer: Player = basicSimulation.players[0]
-        logger.info(f"Sample Player: {samplePlayer.UID}")
-        logger.debug(f"{samplePlayer.UID}'s history: {samplePlayer.history}")
-
-    def test_cardcounts(self, basicSimulation: Simulation) -> None:
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
-        logger.info(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
-        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-
-    def test_ode(self, basicSimulation: Simulation, basicODERPS: OdeRPS) -> None:
-        cardcounts_players = basicSimulation.get_card_counts(AgentType.PLAYER)
-        player_pops_int = basicSimulation.get_player_populations("int")
-        player_pops_float = basicSimulation.get_player_populations("float")
-        logger.info(
-            f"Player pop int : {player_pops_int} \n Player pop float : {player_pops_float}"
-        )
-        logger.info(f"Cards in posession of players: {cardcounts_players}")
-        cardcounts_scalpers = basicSimulation.get_card_counts(AgentType.SCALPER)
-        logger.info(f"Cards in posession of scalpers: {cardcounts_scalpers}")
-        odeSol = basicODERPS.SolveODE()
-        logger.info(f"Got ODE solution w/ data point count = {len(odeSol.y)}")
-        # logger.debug(f"{odeSol.y}")
-
-        logger.info("Plotting ODE...")
-        ODEViz = ODEVisualizer()
-        if isinstance(odeSol.t, list) and isinstance(odeSol.y, list):
-            ODEViz.save_fig_ode(odeSol.t, odeSol.y, simparams=None)
-
-    def test_market_interactions(
-        self, basicSimulation: Simulation, basicMarket: Market
-    ) -> None:
-        basicSimulation.market = basicMarket
-        basicSimulation.run()
-
-
-"""
 class TestMakert:
     def test_market_clear(
-        self, basicMarket: Market, simpleOrders: tuple[list[Order], list[Order]]
+        self, basicMarket: Market, SimpleOrders: tuple[list[Order], list[Order]]
     ) -> None:
         # Generate a list of sell and buy orders
-        bids, offers = simpleOrders
+        logger.info("In market")
+        bids, offers = SimpleOrders
         basicMarket.insert_orders(bids, offers)
-"""
+
+        basicMarket.clear()
+
+        counter: int = 0
+        for order in bids + offers:
+            assert order.callback is not None
+            if order and order.callback:
+                counter += order.callback()
+
+        assert counter == len(bids + offers)

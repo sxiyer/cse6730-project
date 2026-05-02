@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import replace
+from typing import cast
 from operator import neg
 from enum import Enum
 from uuid import UUID
@@ -7,6 +8,7 @@ from uuid import UUID
 from sortedcontainers import SortedSet, SortedDict
 
 from ..models import Card, Order, OrderType, AgentType
+from ..utils import logger
 from . import Market
 
 
@@ -40,10 +42,10 @@ class MarketCommon(Market):
         if not self.buy_list or not self.sell_list:
             if self.buy_list:
                 for order in self.buy_list:
-                    replace(order, executed=False)
+                    order.executed = False
             if self.sell_list:
                 for order in self.sell_list:
-                    replace(order, executed=False)
+                    order.executed = False
             self.buy_list = None
             self.sell_list = None
             return
@@ -58,12 +60,7 @@ class MarketCommon(Market):
 
         """
 
-        ## Count the number of buy/sell orders
-        num_buy: int = 0
-        num_sell: int = 0
-        if self.buy_list and self.sell_list:
-            num_buy = len(self.buy_list)
-            num_sell = len(self.sell_list)
+        logger.info("Executing trade")
 
         dfs_stack: set = set()  # only used for players
 
@@ -83,14 +80,26 @@ class MarketCommon(Market):
 
         # Insert all of the offers
         for offer in self.sell_list:
+            assert offer.callback is not None
             offers[offer.card_type][OrderStatus.AVAILABLE].add(offer)
 
         ## Creating mapping from agentID to its bids by decreasing order
         agents_bids: defaultdict[UUID, SortedSet] = defaultdict(lambda: SortedSet())
         for order in self.buy_list:
+            assert order.callback is not None
             agents_bids[order.agent_UID].add(order)
 
         ## Go through all agents and search for orders that meet their requiremnts
+        # for offer in offers:
+
+        for ids, bids in dict(agents_bids).items():
+            if bids:
+                agent_type: AgentType = cast(Order, bids[-1]).agent_type
+                assert isinstance(agent_type, AgentType)
+
+                bought = self._find_order(
+                    ids, agents_bids, offers, dfs_stack, agent_type
+                )
 
         # Reset the buy/sell lists
         self.sell_list = None
@@ -100,30 +109,40 @@ class MarketCommon(Market):
         self,
         agent_UID: UUID,
         agent_orders: defaultdict[UUID, SortedSet],
-        offers: dict[Card, SortedDict],
+        offers: dict[Card, dict],
         dfs_stack: set,
         agent_type: AgentType,
     ) -> bool:
         """The function searching for offers that meets the bid requirements"""
 
+        logger.info(f"Executing agent: {agent_UID}")
+
         if agent_type == AgentType.PLAYER and agent_UID in dfs_stack:
             dfs_stack.remove(agent_UID)
             return True
 
-        ## Pop the highest bid
-        bid = agent_orders[agent_UID].pop()
+        ## Pop the highest bid if there is any
+        if agent_orders[agent_UID]:
+            bid = agent_orders[agent_UID].pop()
+        elif agent_type == AgentType.PLAYER:
+            return False
+        else:
+            return True
 
         ## Search the AVAILABLE offers
+        index: int = 0
         while offers[bid.card_type][OrderStatus.AVAILABLE]:
-            offer = offers[bid.card_type][OrderStatus.AVAILABLE][-1]
+            num_offers = len(offers[bid.card_type][OrderStatus.AVAILABLE])
+            if index >= num_offers:
+                break
+            offer = offers[bid.card_type][OrderStatus.AVAILABLE][index]
             if (
                 bid.limit_price >= offer.limit_price
                 and bid.agent_UID != offer.agent_UID
+                and offer.agent_UID not in dfs_stack
             ):
                 ## Remove offer from AVAILABLE set
-                offer = offers[bid.card_type][OrderStatus.AVAILABLE].pop()
-                ## Add offer to PENDING set
-                offers[bid.card_type][OrderStatus.PENDING].add(offer)
+                offer = offers[bid.card_type][OrderStatus.AVAILABLE].pop(index)
                 ## Add players to the stack set
                 if agent_type == AgentType.PLAYER:
                     dfs_stack.add(agent_UID)
@@ -133,36 +152,43 @@ class MarketCommon(Market):
                     offer.agent_UID, agent_orders, offers, dfs_stack, offer.agent_type
                 )
                 ## Remove offer from PENDING
-                offers[bid.card_type][OrderStatus.PENDING].remove(offer)
                 if bought:
                     ## Set the transaction as successful
                     offer.executed = True
+                    bid.executed = True
                     ## Update the agent
                     offer.callback()
+                    bid.callback()
+
                     if agent_type == AgentType.PLAYER and agent_UID not in dfs_stack:
                         return False
                     else:
                         return True
                 else:
                     ## Set the transaction as failed
+                    if agent_type == AgentType.PLAYER:
+                        dfs_stack.remove(agent_UID)
                     offer.executed = False
+                    bid.executed = False
                     ## Updat the agent
                     offer.callback()
-
-                    if agent_type == AgentType.PLAYER:
-                        return False
-                    else:
-                        return True
+                    bid.callback()
+            index += 1
 
         ## Check the PENDING offers
-        while offers[bid.card_type][OrderStatus.PENDING]:
-            offer = offers[bid.card_type][OrderStatus.PENDING][-1]
+        index: int = 0
+        while offers[bid.card_type][OrderStatus.AVAILABLE]:
+            num_offers = len(offers[bid.card_type][OrderStatus.AVAILABLE])
+            if index >= num_offers:
+                break
+            offer = offers[bid.card_type][OrderStatus.AVAILABLE][index]
             if (
                 bid.limit_price >= offer.limit_price
                 and bid.agent_UID != offer.agent_UID
+                and offer.agent_UID in dfs_stack
             ):
-                ## Remove offer from PENDING set
-                offer = offers[bid.card_type][OrderStatus.PENDING].pop()
+                ## Remove offer from AVAILABLE set
+                offer = offers[bid.card_type][OrderStatus.AVAILABLE].pop(index)
                 ## Add players to the stack set
                 if agent_type == AgentType.PLAYER:
                     dfs_stack.add(agent_UID)
@@ -174,22 +200,26 @@ class MarketCommon(Market):
                 if bought:
                     ## Set the transaction as successful
                     offer.executed = True
+                    bid.executed = True
                     ## Update the agent
                     offer.callback()
+                    bid.callback()
                     if agent_type == AgentType.PLAYER and agent_UID not in dfs_stack:
                         return False
                     else:
                         return True
                 else:
-                    ## Set the transaction as failed
-                    offer.executed = False
-                    ## Updat the agent
-                    offer.callback()
-
+                    ## Set the transaction as fail
                     if agent_type == AgentType.PLAYER:
-                        return False
-                    else:
-                        return True
+                        dfs_stack.remove(agent_UID)
+                    offer.executed = False
+                    bid.executed = False
+                    ## Update the agent
+                    offer.callback()
+                    bid.callback()
+            index += 1
+        bid.executed = False
+        bid.callback()
 
         if agent_type == AgentType.PLAYER:
             return False
